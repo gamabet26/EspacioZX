@@ -114,6 +114,16 @@
           "rolesPermitidos": [
             "*"
           ]
+        },
+        {
+          "id": "zx-university",
+          "nombre": "ZX University",
+          "url": "https://mejora2zx.github.io/UZX/",
+          "estado": "activa",
+          "descripcion": "Capacitación y desarrollo del personal Zubex",
+          "rolesPermitidos": [
+            "*"
+          ]
         }
       ]
     },
