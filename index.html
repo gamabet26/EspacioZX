@@ -936,6 +936,7 @@ async function cargarApps() {
     renderQuickAccess();
     renderAnuncios(data.anuncios || []);
     renderRailIcons(data.areas);
+    actualizarPildorasBienvenida();
   } catch (err) {
     contenedor.innerHTML = "<div style=\"padding:16px;color:#c0392b;font-size:13px\">No se pudo cargar apps.json (" + err.message + ")</div>";
   }
@@ -1136,7 +1137,27 @@ function renderRailIcons(areas) {
 }
 
 cargarApps();
+
+// ---------------------------------------------------------------
+// Pantalla de bienvenida (ZX_BIENVENIDA, ver bloque antes de </body>)
+// Cuando apps.json ya cargó, le pasamos las apps activas como
+// "píldoras" en órbita (con su ícono y su acción de abrir la app).
+// ---------------------------------------------------------------
+function actualizarPildorasBienvenida() {
+  if (!window.zxBienvenida || typeof window.zxBienvenida.actualizarItems !== "function") return;
+  const items = appsPlanas.slice(0, 8).map(app => ({
+    label: app.nombre,
+    icon: iconFor(app._areaId),
+    onClick: () => {
+      window._zxAppPendiente = app;
+      window.zxBienvenida.entrar();
+    }
+  }));
+  window.zxBienvenida.actualizarItems(items);
+}
+
 </script>
+
 <script>
 // ---------------------------------------------------------------
 // Splash Cursor (adaptado de react-bits, sin React) — estela de
@@ -2466,5 +2487,498 @@ window.disableThreadsBackground = initThreadsBackground(document.getElementById(
   enableMouseInteraction: true
 });
 </script>
+
+<!-- =====================================================================
+     PANTALLA DE BIENVENIDA ZX — Zubex Industrial
+     ===================================================================== -->
+<div id="zxb" role="dialog" aria-modal="true" aria-labelledby="zxb-titulo">
+  <div id="zxb-stage"></div>
+  <div id="zxb-copy">
+    <h1 id="zxb-titulo"></h1>
+    <p id="zxb-sub"></p>
+  </div>
+  <button id="zxb-entrar" type="button"></button>
+</div>
+
+<style>
+  #zxb{ position:fixed; inset:0; z-index:2147483000; opacity:1; visibility:visible;
+    transition:opacity .7s ease .35s, visibility 0s linear 1.05s;
+    font-family:'Poppins','Segoe UI',-apple-system,Arial,sans-serif; }
+  #zxb.zxb-saliendo{ opacity:0; visibility:hidden; pointer-events:none; }
+  #zxb-stage{ position:absolute; inset:0; }
+  html.zxb-lock, html.zxb-lock body{ overflow:hidden !important; }
+
+  #zxb-copy{ position:absolute; left:0; right:0; top:max(7vh, 36px); z-index:4; text-align:center;
+    padding:0 24px; pointer-events:none; animation:zxbIn .9s ease both .15s; }
+  #zxb-titulo{ margin:0 0 10px; color:#0D18A8; font-size:clamp(26px,3.4vw,46px); font-weight:700; letter-spacing:-.015em; line-height:1.1; }
+  #zxb-sub{ margin:0; color:#6b7385; font-size:clamp(14px,1.2vw,17px); }
+  #zxb.zxb-oscuro #zxb-titulo{ color:#fff; }
+  #zxb.zxb-oscuro #zxb-sub{ color:rgba(255,255,255,.65); }
+
+  #zxb-entrar{ position:absolute; left:50%; bottom:calc(7vh + env(safe-area-inset-bottom, 0px)); z-index:5;
+    transform:translate(-50%, 14px); opacity:0; pointer-events:none;
+    padding:17px 52px; border:0; border-radius:999px; cursor:pointer;
+    background:linear-gradient(120deg,#0D18A8,#227EF6); color:#fff;
+    font:600 16px/1 'Poppins','Segoe UI',-apple-system,Arial,sans-serif; letter-spacing:.02em;
+    box-shadow:0 14px 34px rgba(34,126,246,.35);
+    transition:opacity .6s ease, transform .6s cubic-bezier(.22,1,.36,1), box-shadow .25s ease, filter .25s ease; }
+  #zxb.zxb-listo #zxb-entrar{ opacity:1; transform:translate(-50%, 0); pointer-events:auto; }
+  #zxb.zxb-listo #zxb-entrar:hover{ transform:translate(-50%, -2px); box-shadow:0 18px 40px rgba(34,126,246,.45); filter:brightness(1.07); }
+  #zxb-entrar:focus-visible{ outline:3px solid #227EF6; outline-offset:4px; }
+  #zxb.zxb-saliendo #zxb-copy, #zxb.zxb-saliendo #zxb-entrar{ opacity:0; transition:opacity .3s ease; }
+  @keyframes zxbIn{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ #zxb-copy{ animation:none; } }
+</style>
+
+<script>
+  // ---------------- Configuración ----------------
+  window.ZX_BIENVENIDA = Object.assign({
+    titulo: 'Bienvenido a Espacio Zubex',
+    subtitulo: 'Tu plataforma central para la colaboración y el éxito corporativo.',
+    boton: 'Entrar',
+    tema: 'auto',             // sigue el data-theme del portal (claro/oscuro)
+    unaVezPorSesion: false,
+    pildoras: [],             // se llenan solas con las apps activas (ver actualizarPildorasBienvenida)
+    alEntrar: function () {
+      // Si se entró dando clic en una píldora (una app específica), ábrela;
+      // si se entró con el botón "Entrar", ve a la pantalla de Inicio normal.
+      if (window._zxAppPendiente) {
+        var app = window._zxAppPendiente;
+        window._zxAppPendiente = null;
+        abrirApp(app, null);
+      } else {
+        goHome();
+      }
+    }
+  }, window.ZX_BIENVENIDA || {});
+</script>
+
+<script>
+/* ---- Motor de partículas ZX (Three.js r128 se carga solo si tu app no lo tiene) ---- */
+(function (global) {
+  'use strict';
+
+  var THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+  var ZX_PATH = 'M258.5 212.5 L219 212.5 L193 177.5 L168 212.5 L41 212.5 L100.5 117 L49 117 L49 87 L173 87 L193 119.5 L215 87 L253 87 L215.5 146.5 Z M146.5 182 L171.5 147 L147 111.5 L101.5 182 Z';
+  var BX = 41, BY = 87, BW = 217.5, BH = 125.5, LET_H = BH / BW;
+  var TAU = Math.PI * 2, WATER_Y = -1.55, LET_Y = 0.12;
+
+  var DEFAULTS = {
+    theme: 'auto',          // 'light' | 'dark' | 'auto' (lee data-theme de <html>/<body>, si no, el sistema)
+    background: true,       // pinta el fondo del contenedor (blanco / negro)
+    particles: null,        // nº de partículas del ZX (null = 36000 escritorio / 20000 móvil)
+    water: true,            // ondas en el piso
+    stream: true,           // chorro que sube del agua
+    stars: true,            // polvo / estrellas de fondo
+    mouse: true,            // repulsión con el cursor
+    scatterOnScroll: true,  // se dispersa cuando el contenedor sale de pantalla por scroll
+    intro: true,            // animación de ensamblado al cargar
+    items: [],              // píldoras en órbita: [{ label, icon (svg/html opcional), title, onClick }]
+    orbitSpeed: 0.12,       // radianes por segundo
+    logoScale: 1,           // multiplicador del tamaño del ZX
+    orbitBottomPad: 56      // espacio libre abajo para la órbita (px)
+  };
+
+  var CSS = '' +
+    '.zxp-root{position:relative;overflow:hidden;isolation:isolate}' +
+    '.zxp-root.zxp-bg{background:#fff}.zxp-root.zxp-bg.zxp-dark{background:#000}' +
+    '.zxp-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;display:block}' +
+    '.zxp-orbit{position:absolute;inset:0;pointer-events:none}.zxp-back{z-index:1}.zxp-front{z-index:3}' +
+    '.zxp-pill{position:absolute;left:0;top:0;display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:999px;max-width:260px;' +
+      'background:rgba(255,255,255,.78);border:1px solid rgba(13,24,168,.12);box-shadow:0 8px 22px rgba(13,24,168,.10);' +
+      '-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#1c2233;font:500 14.5px/1.2 Poppins,"Segoe UI",-apple-system,sans-serif;' +
+      'white-space:nowrap;cursor:pointer;opacity:0;pointer-events:auto;will-change:transform,opacity;transition:border-color .3s,background-color .3s}' +
+    '.zxp-pill .zxp-lbl{overflow:hidden;text-overflow:ellipsis}' +
+    '.zxp-pill .zxp-ico{width:17px;height:17px;flex-shrink:0;color:#227EF6;display:flex}.zxp-pill .zxp-ico svg{width:100%;height:100%}' +
+    '.zxp-pill:hover,.zxp-pill:focus-visible{border-color:#227EF6;background:#eef4ff;color:#0D18A8;outline:none}' +
+    '.zxp-dark .zxp-pill{background:rgba(22,26,44,.58);border-color:rgba(255,255,255,.14);box-shadow:none;color:#fff}' +
+    '.zxp-dark .zxp-pill .zxp-ico{color:#7fb4ff}' +
+    '.zxp-dark .zxp-pill:hover,.zxp-dark .zxp-pill:focus-visible{background:rgba(13,24,168,.55);color:#fff}' +
+    '@media (max-width:760px){.zxp-pill{font-size:12.5px;padding:10px 16px;max-width:200px}}';
+
+  function injectCSS() {
+    if (document.getElementById('zxp-styles')) return;
+    var s = document.createElement('style'); s.id = 'zxp-styles'; s.textContent = CSS;
+    document.head.appendChild(s);
+  }
+
+  var threePromise = null;
+  function loadThree() {
+    if (global.THREE) return Promise.resolve(global.THREE);
+    if (threePromise) return threePromise;
+    threePromise = new Promise(function (res, rej) {
+      var s = document.createElement('script'); s.src = THREE_URL;
+      s.onload = function () { res(global.THREE); };
+      s.onerror = function () { rej(new Error('No se pudo cargar Three.js')); };
+      document.head.appendChild(s);
+    });
+    return threePromise;
+  }
+
+  function sampleZX() {
+    var S = 3, c = document.createElement('canvas');
+    c.width = Math.ceil(BW * S); c.height = Math.ceil(BH * S);
+    var g = c.getContext('2d');
+    g.setTransform(S, 0, 0, S, -BX * S, -BY * S);
+    g.fillStyle = '#fff'; g.fill(new Path2D(ZX_PATH), 'evenodd');
+    var d = g.getImageData(0, 0, c.width, c.height).data, pts = [];
+    for (var y = 0; y < c.height; y += 2) for (var x = 0; x < c.width; x += 2)
+      if (d[(y * c.width + x) * 4 + 3] > 128) pts.push([(x - c.width / 2) / c.width, -(y - c.height / 2) / c.width]);
+    return pts;
+  }
+
+  // ---------------- Shaders ----------------
+  var FRAG =
+    'uniform float uDark; varying vec3 vColor; varying float vAlpha;\n' +
+    'void main(){ float d=length(gl_PointCoord-.5); float a=1.-smoothstep(0.,.5,d);\n' +
+    '  if(uDark>.5){ a*=a; gl_FragColor=vec4(vColor*a*vAlpha, a*vAlpha); }\n' +
+    '  else { a=smoothstep(0.,.35,a); gl_FragColor=vec4(vColor, a*vAlpha); } }';
+
+  var VS_LETTERS =
+    'uniform float uTime,uProgress,uScatter,uPR,uScale,uLetY,uDark; uniform vec3 uMouse;\n' +
+    'attribute vec3 aStart; attribute float aSeed; attribute float aDelay;\n' +
+    'varying vec3 vColor; varying float vAlpha;\n' +
+    'void main(){\n' +
+    '  float k=clamp((uProgress-aDelay)/0.5,0.,1.); k=1.-pow(1.-k,3.);\n' +
+    '  vec3 target=vec3(position.xy*uScale, position.z*uScale*0.5)+vec3(0.,uLetY,0.);\n' +
+    '  vec3 p=mix(aStart,target,k);\n' +
+    '  p.x+=sin(k*3.14159)*(aSeed-.5)*1.4;\n' +
+    '  p.z+=sin(k*3.14159)*(fract(aSeed*7.)-.5)*1.2;\n' +
+    '  float t=uTime;\n' +
+    '  p+=vec3(sin(t*.7+aSeed*61.)*.014, cos(t*.9+aSeed*37.)*.014, sin(t*.5+aSeed*23.)*.05)*k;\n' +
+    '  vec2 d=p.xy-uMouse.xy; float f=(1.-smoothstep(0.,.8,length(d)))*k;\n' +
+    '  p.xy+=normalize(d+1e-5)*f*.34; p.z+=f*.6;\n' +
+    '  p+=normalize(p-vec3(0.,uLetY,0.)+1e-4)*uScatter*(.6+aSeed*2.6);\n' +
+    '  vec4 mv=modelViewMatrix*vec4(p,1.); gl_Position=projectionMatrix*mv;\n' +
+    '  float tw=.7+.3*sin(t*2.3+aSeed*90.);\n' +
+    '  gl_PointSize=mix(15.,24.,uDark)*uPR*(.5+aSeed*.9)*tw/-mv.z;\n' +
+    '  vColor=mix(vec3(.051,.094,.659),vec3(.133,.494,.965),smoothstep(.15,.85,aSeed));\n' +
+    '  if(aSeed>.93) vColor=mix(vec3(.02,.04,.36),vec3(.72,.85,1.),uDark);\n' +
+    '  vAlpha=mix(.28+.5*k,.35+.9*k,uDark)*(1.-uScatter*.75);\n' +
+    '}';
+
+  var VS_WATER =
+    'uniform float uTime,uPR,uWaterY,uProgress,uScatter,uDark; attribute float aSeed;\n' +
+    'varying vec3 vColor; varying float vAlpha;\n' +
+    'void main(){\n' +
+    '  vec3 p=position; float r=length(p.xz), ang=atan(p.z,p.x);\n' +
+    '  float rr=r+.06*sin(ang*6.+uTime*.35)+.04*sin(ang*11.-uTime*.5);\n' +
+    '  float w=sin(rr*5.2-uTime*1.7), ring=pow(.5+.5*w,10.), fall=1.-smoothstep(.25,7.5,r);\n' +
+    '  p.y=uWaterY+w*.035*fall;\n' +
+    '  vec4 mv=modelViewMatrix*vec4(p,1.); gl_Position=projectionMatrix*mv;\n' +
+    '  gl_PointSize=mix(15.,21.,uDark)*uPR*(.5+aSeed)/-mv.z;\n' +
+    '  vColor=mix(mix(vec3(.051,.094,.659),vec3(.133,.494,.965),smoothstep(.5,5.,r)), mix(vec3(.2,.55,1.),vec3(.051,.094,.659),smoothstep(.8,6.,r)), uDark);\n' +
+    '  vAlpha=mix(.04+ring*1.0,.08+ring*1.7,uDark)*fall*smoothstep(0.,.5,uProgress)*(1.-uScatter*.8);\n' +
+    '}';
+
+  var VS_STREAM =
+    'uniform float uTime,uPR,uWaterY,uTop,uProgress,uScatter,uDark; attribute float aSeed;\n' +
+    'varying vec3 vColor; varying float vAlpha;\n' +
+    'void main(){\n' +
+    '  float f=fract(aSeed*13.7+uTime*(.1+aSeed*.12)), w=mix(.05,.6,f*f);\n' +
+    '  vec3 p=vec3(position.x*w+sin(f*6.+aSeed*20.)*.04, mix(uWaterY,uTop,f), position.y*w*.5);\n' +
+    '  vec4 mv=modelViewMatrix*vec4(p,1.); gl_Position=projectionMatrix*mv;\n' +
+    '  gl_PointSize=mix(15.,22.,uDark)*uPR*(.5+aSeed*.8)/-mv.z;\n' +
+    '  vColor=mix(mix(vec3(.133,.494,.965),vec3(.051,.094,.659),f), mix(vec3(.6,.8,1.),vec3(.133,.494,.965),f), uDark);\n' +
+    '  vAlpha=sin(f*3.14159)*mix(.7,1.2,uDark)*smoothstep(.45,.9,uProgress)*(1.-uScatter);\n' +
+    '}';
+
+  var VS_STARS =
+    'uniform float uTime,uPR,uDark; attribute float aSeed; varying vec3 vColor; varying float vAlpha;\n' +
+    'void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv;\n' +
+    '  gl_PointSize=18.*uPR*(.4+aSeed)/-mv.z; vColor=mix(vec3(.133,.494,.965),mix(vec3(.5,.62,1.),vec3(1.),aSeed),uDark);\n' +
+    '  vAlpha=(.25+.45*sin(uTime*(.6+aSeed)+aSeed*50.))*mix(.35,.8,uDark); }';
+
+  // ---------------- Componente ----------------
+  function mount(container, userOpts) {
+    if (!container) throw new Error('ZXParticles.mount: falta el contenedor');
+    var o = {}; for (var k in DEFAULTS) o[k] = DEFAULTS[k];
+    for (var k2 in (userOpts || {})) o[k2] = userOpts[k2];
+
+    injectCSS();
+    if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
+    container.classList.add('zxp-root');
+    if (o.background) container.classList.add('zxp-bg');
+
+    var canvas = document.createElement('canvas'); canvas.className = 'zxp-canvas'; canvas.setAttribute('aria-hidden', 'true');
+    var back = document.createElement('div'); back.className = 'zxp-orbit zxp-back';
+    var front = document.createElement('div'); front.className = 'zxp-orbit zxp-front'; front.setAttribute('role', 'list');
+    container.insertBefore(front, container.firstChild);
+    container.insertBefore(canvas, front);
+    container.insertBefore(back, canvas);
+
+    var forcedScatter = null;
+    var api = { setItems: setItems, setTheme: setTheme, destroy: destroy, ready: null,
+      setScatter: function (v) { forcedScatter = v; } };
+    var destroyed = false, cleanup = [], pills = [], pendingItems = o.items || [];
+    var dark = false;
+
+    function resolveDark() {
+      if (o.theme === 'dark') return true;
+      if (o.theme === 'light') return false;
+      var a = document.body.getAttribute('data-theme') || document.documentElement.getAttribute('data-theme');
+      if (a) return a === 'dark';
+      return global.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function setTheme(t) { o.theme = t; applyTheme(); }
+    var applyTheme = function () { dark = resolveDark(); container.classList.toggle('zxp-dark', dark); };
+    applyTheme();
+
+    function setItems(items) {
+      pendingItems = items || [];
+      front.innerHTML = ''; back.innerHTML = '';
+      pills = pendingItems.map(function (it) {
+        var el = document.createElement('button');
+        el.type = 'button'; el.className = 'zxp-pill'; el.setAttribute('role', 'listitem');
+        if (it.title) el.title = it.title;
+        el.innerHTML = (it.icon ? '<span class="zxp-ico">' + it.icon + '</span>' : '') + '<span class="zxp-lbl"></span>';
+        el.querySelector('.zxp-lbl').textContent = it.label || '';
+        if (it.onClick) el.addEventListener('click', function (e) { it.onClick(it, e); });
+        el.addEventListener('pointerenter', function () { speedTarget = 0.1; });
+        el.addEventListener('pointerleave', function () { speedTarget = 1; });
+        el.addEventListener('focus', function () { speedTarget = 0; });
+        el.addEventListener('blur', function () { speedTarget = 1; });
+        front.appendChild(el);
+        return el;
+      });
+      measure();
+    }
+    function measure() { pills.forEach(function (el) { el._w = el.offsetWidth; el._h = el.offsetHeight; }); }
+    var speed = 1, speedTarget = 1;
+
+    function destroy() {
+      destroyed = true;
+      cleanup.forEach(function (fn) { try { fn(); } catch (e) {} });
+      [canvas, back, front].forEach(function (n) { if (n.parentNode) n.parentNode.removeChild(n); });
+      container.classList.remove('zxp-root', 'zxp-bg', 'zxp-dark');
+    }
+
+    api.ready = loadThree().then(function (THREE) {
+      if (destroyed) return api;
+      var reduce = global.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, alpha: true, powerPreference: 'high-performance' }); }
+      catch (e) { container.style.background = 'radial-gradient(ellipse at 50% 60%, #227EF6 0%, transparent 65%)'; return api; }
+      var PR = Math.min(global.devicePixelRatio || 1, 2);
+      renderer.setPixelRatio(PR); renderer.setClearColor(0x000000, 0);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.set(0, 0.55, 6.4);
+      var LOOK = new THREE.Vector3(0, 0.05, 0);
+      camera.lookAt(LOOK);
+
+      var U = {
+        uTime: { value: 0 }, uProgress: { value: (reduce || !o.intro) ? 1 : 0 }, uScatter: { value: 0 }, uPR: { value: PR },
+        uMouse: { value: new THREE.Vector3(99, 99, 0) }, uScale: { value: 3 }, uLetY: { value: LET_Y },
+        uWaterY: { value: WATER_Y }, uTop: { value: 0 }, uDark: { value: dark ? 1 : 0 }
+      };
+      var mats = [], geos = [];
+      function addPoints(attrs, vs) {
+        var g = new THREE.BufferGeometry();
+        for (var key in attrs) g.setAttribute(key, new THREE.BufferAttribute(attrs[key].a, attrs[key].s));
+        var m = new THREE.ShaderMaterial({ uniforms: U, vertexShader: vs, fragmentShader: FRAG, transparent: true, depthWrite: false,
+          blending: dark ? THREE.AdditiveBlending : THREE.NormalBlending });
+        var p = new THREE.Points(g, m); p.frustumCulled = false; scene.add(p);
+        mats.push(m); geos.push(g);
+      }
+      applyTheme = function () {
+        dark = resolveDark();
+        container.classList.toggle('zxp-dark', dark);
+        U.uDark.value = dark ? 1 : 0;
+        mats.forEach(function (m) { m.blending = dark ? THREE.AdditiveBlending : THREE.NormalBlending; m.needsUpdate = true; });
+      };
+      if (o.theme === 'auto') {
+        var mo = new MutationObserver(function () { applyTheme(); });
+        mo.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+        mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        cleanup.push(function () { mo.disconnect(); });
+      }
+
+      var small = global.innerWidth < 760, i, a, r;
+      var PTS = sampleZX();
+
+      // Letras
+      var NL = o.particles || (small ? 20000 : 36000), J = 0.0046;
+      var pos = new Float32Array(NL * 3), st = new Float32Array(NL * 3), sd = new Float32Array(NL), dl = new Float32Array(NL);
+      for (i = 0; i < NL; i++) {
+        var pt = PTS[(Math.random() * PTS.length) | 0];
+        var x = pt[0] + (Math.random() - .5) * 2 * J, y = pt[1] + (Math.random() - .5) * 2 * J, z = (Math.random() - .5) * 0.22;
+        if (Math.random() < 0.08) { x += (Math.random() - .5) * 0.08; y += (Math.random() - .5) * 0.08; z *= 2.5; }
+        pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+        r = Math.sqrt(Math.random()) * 1.1; a = Math.random() * TAU;
+        st[i*3] = Math.cos(a) * r; st[i*3+1] = WATER_Y; st[i*3+2] = Math.sin(a) * r;
+        sd[i] = Math.random(); dl[i] = (y / LET_H + 0.5) * 0.35 + Math.random() * 0.12;
+      }
+      addPoints({ position: { a: pos, s: 3 }, aStart: { a: st, s: 3 }, aSeed: { a: sd, s: 1 }, aDelay: { a: dl, s: 1 } }, VS_LETTERS);
+
+      if (o.water) {
+        var NW = small ? 24000 : 42000, wp = new Float32Array(NW * 3), ws = new Float32Array(NW);
+        for (i = 0; i < NW; i++) { r = Math.sqrt(Math.random()) * 7.5; a = Math.random() * TAU; wp[i*3] = Math.cos(a) * r; wp[i*3+2] = Math.sin(a) * r; ws[i] = Math.random(); }
+        addPoints({ position: { a: wp, s: 3 }, aSeed: { a: ws, s: 1 } }, VS_WATER);
+      }
+      if (o.stream) {
+        var NS = small ? 1600 : 3000, sp = new Float32Array(NS * 3), ss = new Float32Array(NS);
+        for (i = 0; i < NS; i++) { a = Math.random() * TAU; r = Math.sqrt(Math.random()); sp[i*3] = Math.cos(a) * r; sp[i*3+1] = Math.sin(a) * r; ss[i] = Math.random(); }
+        addPoints({ position: { a: sp, s: 3 }, aSeed: { a: ss, s: 1 } }, VS_STREAM);
+      }
+      if (o.stars) {
+        var NT = 1200, tp = new Float32Array(NT * 3), ts = new Float32Array(NT);
+        for (i = 0; i < NT; i++) { tp[i*3] = (Math.random() - .5) * 30; tp[i*3+1] = Math.random() * 12 - 2.5; tp[i*3+2] = -3 - Math.random() * 12; ts[i] = Math.random(); }
+        addPoints({ position: { a: tp, s: 3 }, aSeed: { a: ts, s: 1 } }, VS_STARS);
+      }
+      applyTheme();
+
+      // Tamaño
+      var W = 1, H = 1;
+      function resize() {
+        W = container.clientWidth || 1; H = container.clientHeight || 1;
+        renderer.setSize(W, H, false);
+        camera.aspect = W / H; camera.updateProjectionMatrix();
+        var dist = camera.position.distanceTo(LOOK);
+        var visH = 2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), visW = visH * camera.aspect;
+        var s = Math.min(3.1, visW * 0.66, visH * 0.46 / LET_H) * o.logoScale;
+        U.uScale.value = s; U.uTop.value = LET_Y - LET_H * s / 2 + 0.12;
+        measure();
+      }
+      var ro = new ResizeObserver(resize); ro.observe(container);
+      cleanup.push(function () { ro.disconnect(); });
+
+      // Mouse
+      var ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), hit = new THREE.Vector3(), ndc = new THREE.Vector2();
+      var mouseTarget = new THREE.Vector3(99, 99, 0);
+      function onMove(e) {
+        var b = container.getBoundingClientRect();
+        ndc.set((e.clientX - b.left) / b.width * 2 - 1, -((e.clientY - b.top) / b.height) * 2 + 1);
+        ray.setFromCamera(ndc, camera);
+        if (ray.ray.intersectPlane(plane, hit)) mouseTarget.copy(hit);
+      }
+      function onLeave() { mouseTarget.set(99, 99, 0); }
+      if (o.mouse) {
+        container.addEventListener('pointermove', onMove, { passive: true });
+        container.addEventListener('pointerleave', onLeave);
+        cleanup.push(function () { container.removeEventListener('pointermove', onMove); container.removeEventListener('pointerleave', onLeave); });
+      }
+
+      // Órbita
+      var tmp = new THREE.Vector3(), orbitA = 0;
+      function project(px, py, pz) { tmp.set(px, py, pz).project(camera); return { x: (tmp.x + 1) / 2 * W, y: (1 - tmp.y) / 2 * H }; }
+      function layoutOrbit(vis) {
+        var n = pills.length; if (!n) return;
+        var c = project(0, LET_Y - LET_H * U.uScale.value * 0.18, 0), narrow = W < 760;
+        var rX = narrow ? W * 0.42 : Math.min(W * 0.45, 780);
+        var rY = Math.max(20, Math.min(H * (narrow ? 0.24 : 0.27), H - c.y - o.orbitBottomPad)), TILT = 0.07;
+        pills.forEach(function (el, idx) {
+          if (!el._w) { el._w = el.offsetWidth; el._h = el.offsetHeight; }
+          var ang = idx / n * TAU + orbitA, s = Math.sin(ang), co = Math.cos(ang), depth = (s + 1) / 2;
+          var px = c.x + co * rX, py = c.y + s * rY - co * rX * TILT;
+          var sc = 0.52 + depth * 0.5, rot = -co * 8 * (0.4 + depth * 0.6), ry = -co * 24;
+          el.style.transform = 'translate(' + (px - el._w / 2).toFixed(1) + 'px,' + (py - el._h / 2).toFixed(1) + 'px) perspective(700px) rotateY(' + ry.toFixed(1) + 'deg) scale(' + sc.toFixed(3) + ') rotate(' + rot.toFixed(2) + 'deg)';
+          el.style.opacity = ((0.16 + depth * 0.84) * vis).toFixed(3);
+          el.style.filter = depth < 0.42 ? 'blur(' + ((0.42 - depth) * 8).toFixed(1) + 'px)' : 'none';
+          el.style.zIndex = Math.round(depth * 100);
+          el.style.pointerEvents = vis > 0.3 && depth > 0.3 ? 'auto' : 'none';
+          el.tabIndex = vis > 0.3 ? 0 : -1;
+          var layer = s < -0.05 ? back : front;
+          if (el.parentNode !== layer && document.activeElement !== el) layer.appendChild(el);
+        });
+      }
+
+      // Loop (se pausa fuera de pantalla o con la pestaña oculta)
+      var visible = true, t = 0, prog = U.uProgress.value, last = performance.now(), raf = 0;
+      var io = new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }, { threshold: 0 });
+      io.observe(container);
+      cleanup.push(function () { io.disconnect(); cancelAnimationFrame(raf); mats.forEach(function (m) { m.dispose(); }); geos.forEach(function (g) { g.dispose(); }); renderer.dispose(); });
+
+      function frame(now) {
+        raf = requestAnimationFrame(frame);
+        var raw = (now - last) / 1000, dt = Math.min(raw, 0.05); last = now;
+        if (!visible || document.hidden) return;
+        t += Math.min(raw, 0.5);
+        U.uTime.value = reduce ? t * 0.3 : t;
+        if (!reduce && o.intro) prog = Math.min(1, Math.max(0, (t - 0.3) / 3.4));
+        U.uProgress.value = prog;
+        var scat = 0;
+        if (o.scatterOnScroll) { var b = container.getBoundingClientRect(); scat = Math.min(1, Math.max(0, -b.top / (H * 0.85))); }
+        if (forcedScatter != null) scat = forcedScatter;
+        U.uScatter.value += (scat - U.uScatter.value) * Math.min(1, dt * (forcedScatter != null ? 5 : 8));
+        if (U.uMouse.value.distanceTo(mouseTarget) > 8) U.uMouse.value.copy(mouseTarget);
+        else U.uMouse.value.lerp(mouseTarget, 1 - Math.pow(0.006, dt));
+        camera.position.y = 0.55 + U.uScatter.value * 0.6; camera.lookAt(LOOK);
+        speed += (speedTarget - speed) * Math.min(1, dt * 4);
+        orbitA += dt * (reduce ? 0.03 : o.orbitSpeed) * speed;
+        var intro = Math.min(1, Math.max(0, (prog - 0.75) / 0.25));
+        layoutOrbit(intro * Math.max(0, 1 - U.uScatter.value * 1.6));
+        renderer.render(scene, camera);
+      }
+      resize();
+      raf = requestAnimationFrame(frame);
+      return api;
+    });
+
+    setItems(pendingItems);
+    return api;
+  }
+
+  global.ZXParticles = { mount: mount };
+})(window);
+
+</script>
+
+<script>
+(function () {
+  var cfg = window.ZX_BIENVENIDA;
+  var root = document.getElementById('zxb');
+  if (!root) return;
+  var KEY = 'zxb-visto';
+  if (cfg.unaVezPorSesion) { try { if (sessionStorage.getItem(KEY)) { root.remove(); return; } } catch (e) {} }
+
+  document.getElementById('zxb-titulo').textContent = cfg.titulo || '';
+  document.getElementById('zxb-sub').textContent = cfg.subtitulo || '';
+  var btn = document.getElementById('zxb-entrar');
+  btn.textContent = cfg.boton || 'Entrar';
+  document.documentElement.classList.add('zxb-lock');
+
+  var stage = document.getElementById('zxb-stage');
+  var zx = ZXParticles.mount(stage, {
+    theme: cfg.tema,
+    items: (cfg.pildoras || []).map(function (p) { return typeof p === 'string' ? { label: p } : p; }),
+    scatterOnScroll: false,
+    orbitBottomPad: 150
+  });
+
+  // Copiar el tema del escenario al texto (por si tema = 'auto')
+  function syncTema() { root.classList.toggle('zxb-oscuro', stage.classList.contains('zxp-dark')); }
+  syncTema();
+  var mo = new MutationObserver(syncTema); mo.observe(stage, { attributes: true, attributeFilter: ['class'] });
+
+  // El botón aparece cuando el ZX termina de formarse
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var tListo = setTimeout(function () { root.classList.add('zxb-listo'); }, reduce ? 200 : 2800);
+
+  var saliendo = false;
+  function entrar() {
+    if (saliendo) return; saliendo = true;
+    clearTimeout(tListo);
+    zx.setScatter(1);                       // las partículas se dispersan
+    root.classList.add('zxb-saliendo');     // y la pantalla se desvanece
+    try { if (cfg.unaVezPorSesion) sessionStorage.setItem(KEY, '1'); } catch (e) {}
+    setTimeout(function () {
+      mo.disconnect(); zx.destroy(); root.remove();
+      document.documentElement.classList.remove('zxb-lock');
+      document.removeEventListener('keydown', onKey);
+      if (typeof cfg.alEntrar === 'function') cfg.alEntrar();
+      document.dispatchEvent(new CustomEvent('zx:entrar'));
+    }, 1100);
+  }
+  function onKey(e) { if (e.key === 'Enter' && root.classList.contains('zxb-listo')) { e.preventDefault(); entrar(); } }
+  btn.addEventListener('click', entrar);
+  document.addEventListener('keydown', onKey);
+
+  window.zxBienvenida = { entrar: entrar, actualizarItems: zx.setItems };   // expone entrar() y actualizarItems() para conectar apps reales
+})();
+</script>
+<!-- ===================== fin pantalla de bienvenida ZX ===================== -->
 </body>
 </html>
