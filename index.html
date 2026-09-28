@@ -695,7 +695,7 @@
     <div id="home">
       <div id="threads-bg"></div>
       <div id="home-inner">
-        <h1>Bienvenido a Espacio Zubex</h1>
+        <h1 id="home-titulo">Bienvenido a Espacio Zubex</h1>
         <div id="home-tagline">Tu plataforma central para la colaboración y el éxito corporativo.</div>
         <button id="home-continue" onclick="document.getElementById('quick-access').scrollIntoView({behavior:'smooth'})">Continuar →</button>
 
@@ -893,6 +893,12 @@ async function cargarApps() {
       const body = document.createElement("div");
       body.className = "area-body";
 
+      if (tieneApps) {
+        area.apps.filter(appVisibleParaUsuario).forEach(app => {
+          body.appendChild(crearAppItem(app, area.id));
+        });
+      }
+
       if (tieneSubareas) {
         area.subareas.forEach(sub => {
           const subBloque = document.createElement("div");
@@ -921,11 +927,9 @@ async function cargarApps() {
           subBloque.appendChild(subBody);
           body.appendChild(subBloque);
         });
-      } else if (tieneApps) {
-        area.apps.filter(appVisibleParaUsuario).forEach(app => {
-          body.appendChild(crearAppItem(app, area.id));
-        });
-      } else {
+      }
+
+      if (!tieneApps && !tieneSubareas) {
         body.innerHTML = "<div class=\"empty-note\">Sin herramientas aún</div>";
       }
 
@@ -984,7 +988,16 @@ function renderQuickAccess() {
 function renderAnuncios(anuncios) {
   const cont = document.getElementById("anuncios");
   cont.innerHTML = "";
-  anuncios.forEach(a => {
+
+  // El anuncio más reciente (el primero de la lista) se usa como encabezado
+  // de la pantalla de Inicio en vez de mostrarse también como tarjeta.
+  const [destacadoComoEncabezado, ...resto] = anuncios;
+  if (destacadoComoEncabezado) {
+    document.getElementById("home-titulo").textContent = destacadoComoEncabezado.titulo;
+    document.getElementById("home-tagline").textContent = destacadoComoEncabezado.texto || "";
+  }
+
+  resto.forEach(a => {
     const card = document.createElement("div");
     card.className = "anuncio-card";
     card.innerHTML =
@@ -993,7 +1006,7 @@ function renderAnuncios(anuncios) {
       "<div class=\"anuncio-fecha\">" + (a.fecha || "") + "</div>";
     cont.appendChild(card);
   });
-  if (anuncios.length === 0) {
+  if (resto.length === 0) {
     cont.innerHTML = "<div class=\"empty-note\">Sin anuncios por ahora</div>";
   }
 }
