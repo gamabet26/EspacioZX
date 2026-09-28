@@ -10,7 +10,7 @@
           "nombre": "Ztela ZX",
           "url": "http://192.168.43.170/",
           "estado": "activa",
-          "descripcion": "Registro de bobinas (backend pendiente con Chuy)",
+          "descripcion": "Registro de bobinas",
           "rolesPermitidos": [
             "*"
           ]
@@ -57,7 +57,7 @@
           "nombre": "Medición de Atributos",
           "url": "https://zxerpdev.github.io/medicion-atributos-/",
           "estado": "activa",
-          "descripcion": "ASC-F-01 · Auditoría de Atributos y Variables de Extrusión",
+          "descripcion": "",
           "rolesPermitidos": [
             "*"
           ]
@@ -67,7 +67,7 @@
           "nombre": "Monitoreo y Control de Corrugado",
           "url": "https://zx-erp.github.io/Corrugado/",
           "estado": "activa",
-          "descripcion": "ASC-F-50 · Monitoreo y Control de Corrugado",
+          "descripcion": "",
           "rolesPermitidos": [
             "*"
           ]
@@ -100,7 +100,7 @@
           "nombre": "Expediente Médico",
           "url": "https://zxerpdev.github.io/Expediente-Medico-/",
           "estado": "activa",
-          "descripcion": "Medico ZX — expedientes médicos del personal",
+          "descripcion": "",
           "rolesPermitidos": [
             "*"
           ]
@@ -110,17 +110,17 @@
           "nombre": "Avisos",
           "url": "https://zxerpdev.github.io/Avisos-RH/",
           "estado": "activa",
-          "descripcion": "Captura de personal (cumpleaños/aniversarios) y eventos de la empresa, se reflejan en la pantalla de Inicio",
+          "descripcion": "",
           "rolesPermitidos": [
             "*"
           ]
         },
         {
           "id": "zx-university",
-          "nombre": "ZX University",
+          "nombre": "Examenes",
           "url": "https://mejora2zx.github.io/UZX/",
           "estado": "activa",
-          "descripcion": "Capacitación y desarrollo del personal Zubex",
+          "descripcion": "",
           "rolesPermitidos": [
             "*"
           ]
@@ -184,7 +184,7 @@
           "nombre": "ZX-PTES",
           "url": "https://gamabet26.github.io/ZX-PTES/",
           "estado": "activa",
-          "descripcion": "Tablero de tareas estilo Jira (con asistente Bexuz)",
+          "descripcion": "",
           "rolesPermitidos": [
             "*"
           ]
@@ -201,7 +201,7 @@
           "nombre": "Automatización de Altas SAP",
           "url": null,
           "estado": "en_desarrollo",
-          "descripcion": "Automatiza la creación de artículos en SAP B1 (DTW)",
+          "descripcion": "Automatiza la creación de artículos en SAP",
           "rolesPermitidos": [
             "*"
           ]
