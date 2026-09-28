@@ -10,7 +10,7 @@
           "nombre": "Ztela ZX",
           "url": "http://192.168.43.170/",
           "estado": "activa",
-          "descripcion": "Registro de bobinas",
+          "descripcion": "Registro de bobinas ",
           "rolesPermitidos": [
             "*"
           ]
@@ -96,16 +96,6 @@
           ]
         },
         {
-          "id": "expediente-medico",
-          "nombre": "Expediente Médico",
-          "url": "https://zxerpdev.github.io/Expediente-Medico-/",
-          "estado": "activa",
-          "descripcion": "Medico ZX — expedientes médicos del personal",
-          "rolesPermitidos": [
-            "*"
-          ]
-        },
-        {
           "id": "avisos-rh",
           "nombre": "Avisos",
           "url": "https://zxerpdev.github.io/Avisos-RH/",
@@ -117,6 +107,22 @@
         }
       ],
       "subareas": [
+        {
+          "id": "seguridad-salud",
+          "nombre": "Seguridad y Salud",
+          "apps": [
+            {
+              "id": "expediente-medico",
+              "nombre": "Expediente Médico",
+              "url": "https://zxerpdev.github.io/Expediente-Medico-/",
+              "estado": "activa",
+              "descripcion": "Medico ZX — expedientes médicos del personal",
+              "rolesPermitidos": [
+                "*"
+              ]
+            }
+          ]
+        },
         {
           "id": "zx-university",
           "nombre": "ZX University",
