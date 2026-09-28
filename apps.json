@@ -114,15 +114,43 @@
           "rolesPermitidos": [
             "*"
           ]
-        },
+        }
+      ],
+      "subareas": [
         {
           "id": "zx-university",
-          "nombre": "Examenes",
-          "url": "https://mejora2zx.github.io/UZX/",
-          "estado": "activa",
-          "descripcion": "",
-          "rolesPermitidos": [
-            "*"
+          "nombre": "ZX University",
+          "apps": [
+            {
+              "id": "zxu-examenes",
+              "nombre": "Exámenes",
+              "url": "https://mejora2zx.github.io/UZX/",
+              "estado": "activa",
+              "descripcion": "",
+              "rolesPermitidos": [
+                "*"
+              ]
+            },
+            {
+              "id": "zxu-capacitacion",
+              "nombre": "Capacitación",
+              "url": null,
+              "estado": "en_desarrollo",
+              "descripcion": "Cursos y capacitación del personal",
+              "rolesPermitidos": [
+                "*"
+              ]
+            },
+            {
+              "id": "zxu-biblioteca",
+              "nombre": "Biblioteca",
+              "url": null,
+              "estado": "en_desarrollo",
+              "descripcion": "Biblioteca de materiales y consulta",
+              "rolesPermitidos": [
+                "*"
+              ]
+            }
           ]
         }
       ]
@@ -201,7 +229,7 @@
           "nombre": "Automatización de Altas SAP",
           "url": null,
           "estado": "en_desarrollo",
-          "descripcion": "Automatiza la creación de artículos en SAP",
+          "descripcion": "Automatiza la creación de artículos en SAP B1",
           "rolesPermitidos": [
             "*"
           ]
