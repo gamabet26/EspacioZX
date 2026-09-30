@@ -4,15 +4,37 @@
       "id": "produccion",
       "nombre": "Producción",
       "icono": "⚙️",
-      "apps": [
+      "subareas": [
         {
-          "id": "ztela-zx",
-          "nombre": "Ztela ZX",
-          "url": "http://192.168.43.170/",
-          "estado": "activa",
-          "descripcion": "Registro de bobinas ",
-          "rolesPermitidos": [
-            "*"
+          "id": "extruder",
+          "nombre": "Extruder",
+          "apps": [
+            {
+              "id": "ztela-zx",
+              "nombre": "Ztela ZX",
+              "url": "http://192.168.43.170/",
+              "estado": "activa",
+              "descripcion": "Registro de bobinas ",
+              "rolesPermitidos": [
+                "*"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "impresion",
+          "nombre": "Impresión",
+          "apps": [
+            {
+              "id": "diania",
+              "nombre": "DIANIA",
+              "url": "https://diania-zubex.web.app",
+              "estado": "activa",
+              "descripcion": "",
+              "rolesPermitidos": [
+                "*"
+              ]
+            }
           ]
         }
       ]
@@ -199,8 +221,8 @@
         {
           "id": "8s",
           "nombre": "8's",
-          "url": "https://mejora2zx.github.io/8S/resultados/",
-          "estado": "activa",
+          "url": null,
+          "estado": "en_desarrollo",
           "descripcion": "",
           "rolesPermitidos": [
             "*"
