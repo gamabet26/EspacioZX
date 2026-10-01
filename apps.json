@@ -221,8 +221,8 @@
         {
           "id": "8s",
           "nombre": "8's",
-          "url": null,
-          "estado": "en_desarrollo",
+          "url": "https://mejora2zx.github.io/8S/resultados/",
+          "estado": "activa",
           "descripcion": "",
           "rolesPermitidos": [
             "*"
