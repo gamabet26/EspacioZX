@@ -266,8 +266,6 @@
   #theme-toggle:hover{ filter:brightness(1.05); }
 
   /* ---------- AREAS / SUBAREAS (acordeón) ---------- */
-  /* Cada área es una tarjeta separada, no una fila continua que se
-     funde con las demás — separación por espacio + fondo propio. */
   #areas-container{ padding:12px 10px; display:flex; flex-direction:column; gap:8px; }
   #sidebar:not(.expanded) #areas-container{ display:none; }
 
@@ -544,7 +542,7 @@
   .quick-card-label{ font-size:13.5px; font-weight:600; color:var(--text); }
 
   #anuncios{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,300px),1fr));
     gap:14px; text-align:left; margin-bottom:34px;
   }
   .anuncio-card{
@@ -558,34 +556,154 @@
   .anuncio-fecha{ font-size:12px; color:var(--muted); }
 
   /* ---------- AVISOS RH: cumpleaños / aniversarios / eventos ---------- */
-  #avisos-cumple, #avisos-aniversario, #avisos-eventos{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr));
+  /* Cumpleaños y aniversarios: tarjetas apiladas tipo "Project" (sticky + scale al hacer scroll) */
+  #avisos-cumple, #avisos-aniversario{
+    display:block; text-align:left; margin:0 0 34px; position:relative;
+    max-width:540px;
+  }
+  .stack-item{
+    position:sticky;
+    top:calc(12px + var(--i,0) * 14px);
+    margin-bottom:24px;
+  }
+  .stack-item:last-child{ margin-bottom:0; }
+  .stack-card{
+    transform-origin:top center;
+    will-change:transform;
+    cursor:pointer;
+    min-height:112px;
+    padding:20px 26px;
+    gap:20px;
+    box-shadow:0 10px 30px rgba(13,24,168,.10);
+    transition:box-shadow .2s ease, border-color .2s ease;
+  }
+  .stack-card:hover{ box-shadow:0 14px 36px rgba(34,126,246,.28); border-color:rgba(34,126,246,.45); }
+  .stack-card:focus-visible{ outline:3px solid var(--zx-blue); outline-offset:3px; }
+  .stack-card .aviso-foto{ width:clamp(64px,7vw,88px); height:clamp(64px,7vw,88px); }
+  .stack-card .aviso-icon{ font-size:clamp(40px,5vw,56px); }
+  .felic-cta{
+    flex-shrink:0; margin-left:auto;
+    border:2px solid var(--zx-blue); color:var(--zx-blue-dark);
+    border-radius:999px; padding:7px 16px;
+    font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    white-space:nowrap;
+  }
+  [data-theme="dark"] .felic-cta{ color:var(--zx-blue); }
+  @media (max-width:560px){ .felic-cta{ display:none; } }
+
+  /* Overlay de felicitación con explosión de partículas */
+  #felic{
+    position:fixed; inset:0; z-index:1000; display:none;
+    align-items:center; justify-content:center;
+    background:rgba(6,9,25,.78);
+    -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+    cursor:pointer;
+  }
+  #felic.on{ display:flex; animation:felicIn .35s ease both; }
+  @keyframes felicIn{ from{opacity:0} to{opacity:1} }
+  #felic canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .felic-box{
+    position:relative; text-align:center; color:#fff;
+    padding:32px 28px; max-width:min(92vw,640px);
+    opacity:0; transform:scale(.8) translateY(14px);
+    transition:opacity .6s ease .45s, transform .7s cubic-bezier(.22,1,.36,1) .45s;
+  }
+  #felic.on .felic-box{ opacity:1; transform:none; }
+  .felic-foto{
+    width:112px; height:112px; border-radius:50%; object-fit:cover;
+    border:3px solid #227EF6; box-shadow:0 0 34px rgba(34,126,246,.7);
+    margin:0 auto 18px; display:block; background:#141a2b;
+  }
+  .felic-emoji{ font-size:84px; line-height:1; margin-bottom:14px; }
+  .felic-kicker{ font-size:clamp(14px,1.6vw,18px); letter-spacing:.14em; text-transform:uppercase; color:#9cc6ff; font-weight:600; margin-bottom:8px; }
+  .felic-titulo{
+    margin:0 0 10px; font-size:clamp(30px,6vw,56px); font-weight:800; line-height:1.05; text-transform:uppercase;
+    background:linear-gradient(180deg,#ffffff 0%,#7fb4ff 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .felic-nombre{ font-size:clamp(20px,3.2vw,30px); font-weight:700; margin-bottom:12px; overflow-wrap:anywhere; }
+  .felic-msg{ font-size:clamp(14px,1.8vw,18px); color:rgba(255,255,255,.82); line-height:1.5; margin:0 auto; max-width:46ch; }
+  .felic-cerrar{ margin-top:18px; font-size:12px; color:rgba(255,255,255,.5); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+  .felic-box{ max-height:94vh; overflow-y:auto; width:min(92vw,440px); }
+  .felic-x{
+    position:absolute; top:6px; right:6px; width:34px; height:34px; border-radius:50%;
+    border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff;
+    font-size:16px; line-height:1; cursor:pointer;
+  }
+  .felic-x:hover{ background:rgba(255,255,255,.18); }
+
+  /* mensajes dentro de la tarjeta */
+  .felic-notes{ margin-top:8px; display:flex; flex-direction:column; gap:4px; }
+  .felic-nota{
+    font-size:12.5px; color:var(--text);
+    background:rgba(34,126,246,.09); border-radius:10px; padding:6px 10px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    overflow-wrap:anywhere;
+  }
+  .felic-nota b{ color:var(--zx-blue-dark); font-weight:600; }
+  [data-theme="dark"] .felic-nota b{ color:var(--zx-blue); }
+  .felic-mas{ font-size:11.5px; color:var(--muted); padding-left:4px; }
+
+  /* mensajes + formulario dentro del overlay */
+  .felic-msgs{
+    margin:16px auto 0; max-width:480px; max-height:150px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:6px; text-align:left;
+  }
+  .felic-msgs .m{
+    font-size:13.5px; color:#fff; background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:8px 12px;
+    overflow-wrap:anywhere;
+  }
+  .felic-msgs .m b{ color:#9cc6ff; font-weight:600; }
+  .felic-msgs .vacio{ font-size:12.5px; color:rgba(255,255,255,.55); text-align:center; font-style:italic; }
+  .felic-form{ margin:14px auto 0; max-width:480px; display:flex; flex-direction:column; gap:8px; text-align:left; }
+  .felic-form textarea, .felic-form input{
+    width:100%; font:inherit; font-size:14px; color:#fff;
+    background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.25);
+    border-radius:12px; padding:10px 12px; outline:none; resize:none;
+  }
+  .felic-form textarea::placeholder, .felic-form input::placeholder{ color:rgba(255,255,255,.5); }
+  .felic-form textarea:focus, .felic-form input:focus{ border-color:#227EF6; box-shadow:0 0 0 3px rgba(34,126,246,.35); }
+  .felic-enviar{
+    border:0; border-radius:999px; padding:12px 24px; cursor:pointer;
+    background:linear-gradient(120deg,#0D18A8,#227EF6); color:#fff;
+    font:600 14px/1 inherit; letter-spacing:.03em;
+    box-shadow:0 10px 26px rgba(34,126,246,.35);
+  }
+  .felic-enviar:disabled{ opacity:.6; cursor:default; }
+  .felic-status{ min-height:16px; font-size:12.5px; color:#9cc6ff; text-align:center; }
+  #avisos-eventos{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,320px),1fr));
     gap:14px; text-align:left; margin-bottom:34px;
   }
   .aviso-card{
+    min-width:0;
     background:var(--panel);
     border:1px solid var(--border);
     border-left:5px solid var(--zx-blue);
     border-radius:14px;
-    padding:16px 20px;
-    display:flex; align-items:center; gap:16px;
+    padding:14px 16px;
+    display:flex; align-items:center; gap:14px;
   }
+  .aviso-card > div:not(.aviso-icon){ min-width:0; flex:1; }
   .aviso-card.pendiente{ border-left-color:#e0a72a; }
-  .aviso-icon{ font-size:32px; flex-shrink:0; }
+  .aviso-icon{ font-size:clamp(26px,3vw,32px); flex-shrink:0; }
   .aviso-foto{
-    width:64px; height:64px; border-radius:50%; object-fit:cover;
+    width:clamp(52px,5vw,64px); height:clamp(52px,5vw,64px);
+    border-radius:50%; object-fit:cover;
     flex-shrink:0; border:1px solid var(--border); background:#eef1fa;
   }
-  .aviso-foto.rect{ width:110px; height:74px; border-radius:10px; }
-  .aviso-titulo{ font-size:16px; font-weight:700; color:var(--text); }
-  .aviso-texto{ font-size:14px; color:var(--muted); margin-top:2px; }
-  .avisos-empty{ font-size:13.5px; color:var(--muted); font-style:italic; }
+  .aviso-foto.rect{ width:clamp(84px,9vw,110px); height:clamp(58px,6vw,74px); border-radius:10px; }
+  .aviso-titulo{ font-size:16px; font-weight:700; color:var(--text); overflow-wrap:anywhere; }
+  .aviso-texto{ font-size:14px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
+  .avisos-empty{ grid-column:1 / -1; font-size:13.5px; color:var(--muted); font-style:italic; }
 
   #avisos-videos{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(380px,1fr));
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,340px),1fr));
     gap:16px; text-align:left; margin-bottom:34px;
   }
   .video-card{
+    min-width:0;
     background:var(--panel); border:1px solid var(--border); border-radius:14px;
     padding:16px 18px;
   }
@@ -596,6 +714,15 @@
     background:#000;
   }
   .video-card a.video-link{ font-size:14px; color:var(--zx-blue); font-weight:600; }
+
+  /* ---------- FadeIn al entrar en vista ---------- */
+  .reveal{
+    opacity:0; transform:translateY(30px);
+    transition:opacity .7s cubic-bezier(.25,.1,.25,1) var(--d,0s),
+               transform .7s cubic-bezier(.25,.1,.25,1) var(--d,0s);
+  }
+  .reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion:reduce){ .reveal{ opacity:1; transform:none; transition:none; } }
 
   /* ---------- LOADING / EN CONSTRUCCIÓN ---------- */
   #loading-overlay, #construccion-view{
@@ -690,16 +817,16 @@
         <div class="home-section-title">Anuncios destacados</div>
         <div id="anuncios"></div>
 
-        <div class="home-section-title">🎂 Cumpleaños</div>
+        <div class="home-section-title"><span class="ti">🎂</span> Cumpleaños</div>
         <div id="avisos-cumple"></div>
 
-        <div class="home-section-title">🎉 Aniversarios</div>
+        <div class="home-section-title"><span class="ti">🎉</span> Aniversarios</div>
         <div id="avisos-aniversario"></div>
 
-        <div class="home-section-title">📅 Eventos de la empresa</div>
+        <div class="home-section-title"><span class="ti">📅</span> Eventos de la empresa</div>
         <div id="avisos-eventos"></div>
 
-        <div class="home-section-title">🎬 Videos</div>
+        <div class="home-section-title"><span class="ti">🎬</span> Videos</div>
         <div id="avisos-videos"></div>
       </div>
     </div>
@@ -2115,11 +2242,54 @@ function estadoDeFecha(mesDiaISO, hoy) {
   return null;
 }
 
+// --- Felicitaciones personalizadas (guardadas en Firebase: felicitaciones/{clave}/{pushId}) ---
+window._felic = {};
+function escFelic(t) {
+  const d = document.createElement('div');
+  d.textContent = t == null ? '' : String(t);
+  return d.innerHTML;
+}
+function felicDe(it) {
+  const m = (window._felic || {})[it && it.clave] || {};
+  return Object.values(m).filter(x => x && x.mensaje).sort((a, b) => (a.fecha || 0) - (b.fecha || 0));
+}
+function notasCard(it) {
+  const l = felicDe(it);
+  if (!l.length) return '';
+  const ult = l.slice(-2);
+  return '<div class="felic-notes">' +
+    ult.map(n => `<div class="felic-nota">“${escFelic(n.mensaje)}”${n.autor ? ` <b>— ${escFelic(n.autor)}</b>` : ''}</div>`).join('') +
+    (l.length > 2 ? `<div class="felic-mas">+${l.length - 2} más</div>` : '') +
+    '</div>';
+}
+
 function renderAvisoLista(contenedorId, items, mensajeVacio) {
   const el = document.getElementById(contenedorId);
   if (!el) return;
+  if (contenedorId === 'avisos-cumple' || contenedorId === 'avisos-aniversario') {
+    window._avisosData = window._avisosData || {};
+    window._avisosData[contenedorId] = items;
+  }
   if (!items.length) {
     el.innerHTML = `<div class="avisos-empty">${mensajeVacio}</div>`;
+    return;
+  }
+  // Cumpleaños y aniversarios: tarjetas apiladas y clicables (felicitación)
+  if (contenedorId === 'avisos-cumple' || contenedorId === 'avisos-aniversario') {
+    window._avisosData = window._avisosData || {};
+    window._avisosData[contenedorId] = items;
+    el.innerHTML = items.map((it, i) => `
+    <div class="stack-item" style="--i:${Math.min(i, 5)}">
+      <div class="aviso-card stack-card ${it.pendiente ? 'pendiente' : ''}" data-idx="${i}" role="button" tabindex="0" aria-label="Felicitar a ${String(it.titulo).replace(/"/g, '&quot;')}">
+        ${it.foto ? `<img class="aviso-foto" src="${it.foto}" alt="">` : `<div class="aviso-icon">${it.icono}</div>`}
+        <div>
+          <div class="aviso-titulo">${it.titulo}</div>
+          <div class="aviso-texto">${it.texto}</div>
+          ${notasCard(it)}
+        </div>
+        <span class="felic-cta">🎈 Felicitar</span>
+      </div>
+    </div>`).join('');
     return;
   }
   el.innerHTML = items.map(it => `
@@ -2182,7 +2352,8 @@ function cargarAvisos() {
     const cumples = [];
     const aniversarios = [];
 
-    Object.values(personal).forEach(p => {
+    Object.entries(personal).forEach(([pid, p]) => {
+      const _c0 = cumples.length, _a0 = aniversarios.length;
       if (p.fechaNacimiento) {
         const estado = estadoDeFecha(p.fechaNacimiento, hoy);
         if (estado === 'hoy') {
@@ -2208,6 +2379,9 @@ function cargarAvisos() {
           }
         }
       }
+      // clave estable por persona + ocasión + año, para ligar los mensajes a la tarjeta
+      for (let k = _c0; k < cumples.length; k++) cumples[k].clave = pid + '_cumple_' + hoy.getFullYear();
+      for (let k = _a0; k < aniversarios.length; k++) aniversarios[k].clave = pid + '_aniv_' + hoy.getFullYear();
     });
 
     renderAvisoLista('avisos-cumple', cumples, 'No hay cumpleaños hoy.');
@@ -2231,6 +2405,15 @@ function cargarAvisos() {
     const videos = snap.val() || {};
     const lista = Object.values(videos);
     renderVideosLista(lista, 'No hay videos por ahora.');
+  });
+
+  avisosDb.ref('felicitaciones').on('value', snap => {
+    window._felic = snap.val() || {};
+    ['avisos-cumple', 'avisos-aniversario'].forEach(id => {
+      const d = (window._avisosData || {})[id];
+      if (d && d.length) renderAvisoLista(id, d, '');
+    });
+    if (window._felicRefresh) window._felicRefresh();
   });
 }
 
@@ -2812,7 +2995,7 @@ window.disableThreadsBackground = initThreadsBackground(document.getElementById(
       addPoints({ position: { a: pos, s: 3 }, aStart: { a: st, s: 3 }, aSeed: { a: sd, s: 1 }, aDelay: { a: dl, s: 1 } }, VS_LETTERS);
 
       if (o.water) {
-        var NW = small ? 24000 : 42000, wp = new Float32Array(NW * 3), ws = new Float32Array(NW);
+        var NW = o.waterParticles || (small ? 24000 : 42000), wp = new Float32Array(NW * 3), ws = new Float32Array(NW);
         for (i = 0; i < NW; i++) { r = Math.sqrt(Math.random()) * 7.5; a = Math.random() * TAU; wp[i*3] = Math.cos(a) * r; wp[i*3+2] = Math.sin(a) * r; ws[i] = Math.random(); }
         addPoints({ position: { a: wp, s: 3 }, aSeed: { a: ws, s: 1 } }, VS_WATER);
       }
@@ -2978,5 +3161,279 @@ window.disableThreadsBackground = initThreadsBackground(document.getElementById(
 })();
 </script>
 <!-- ===================== fin pantalla de bienvenida ZX ===================== -->
+
+
+<!-- =====================================================================
+     SCROLL REVEAL de la pantalla de Inicio (FadeIn al entrar en vista,
+     equivalente al FadeIn con whileInView del prompt). El scroll ocurre
+     dentro de #home, por eso el observer usa #home como root.
+     ===================================================================== -->
+<script>
+(function(){
+  var home = document.getElementById('home');
+  var inner = document.getElementById('home-inner');
+  if (!home || !inner) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (!en.isIntersecting) return;
+      var el = en.target;
+      el.classList.add('in');
+      io.unobserve(el);
+      // al terminar, se quita la clase para no dejar el retraso en el hover de las tarjetas
+      el.addEventListener('transitionend', function f(e){
+        if (e.target !== el) return;
+        el.classList.remove('reveal','in');
+        el.style.removeProperty('--d');
+        el.removeEventListener('transitionend', f);
+      });
+    });
+  }, { root: home, rootMargin: '0px 0px -50px 0px', threshold: 0 });
+
+  function marcar(){
+    inner.querySelectorAll('.home-section-title, .quick-card, .anuncio-card, #avisos-eventos .aviso-card, .video-card, .avisos-empty, .empty-note')
+      .forEach(function(el){
+        if (el.dataset.rv) return;
+        el.dataset.rv = '1';
+        var i = Array.prototype.indexOf.call(el.parentNode.children, el);
+        el.style.setProperty('--d', (Math.min(i, 8) * 0.1) + 's');
+        el.classList.add('reveal');
+        io.observe(el);
+      });
+  }
+  new MutationObserver(marcar).observe(inner, { childList: true, subtree: true });
+  marcar();
+})();
+</script>
+
+<!-- =====================================================================
+     TARJETAS APILADAS (cumpleaños / aniversarios) + FELICITACIÓN
+     - Apilado: cada tarjeta es sticky y se encoge (scale) conforme las
+       siguientes se le montan encima (mismo cálculo que el prompt:
+       escala = 1 - (tarjetas encima) * 0.04).
+     - Al hacer clic en una tarjeta: explosión de partículas + mensaje.
+     ===================================================================== -->
+<script>
+(function(){
+  var home = document.getElementById('home');
+  if (!home) return;
+  var BASE = 12, OFF = 14, CAP = 5, GAP = 24, K = 0.04, MIN = 0.8;
+  var conts = ['avisos-cumple','avisos-aniversario'].map(function(id){ return document.getElementById(id); });
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pend = false;
+
+  function clamp(v,a,b){ return Math.min(b, Math.max(a, v)); }
+
+  function update(){
+    pend = false;
+    if (reduce) return;
+    var hr = home.getBoundingClientRect();
+    conts.forEach(function(c){
+      if (!c) return;
+      var items = c.querySelectorAll('.stack-item');
+      var n = items.length;
+      if (!n) return;
+      var cards = [];
+      for (var q = 0; q < n; q++) cards.push(items[q].firstElementChild);
+      if (n < 2) { cards[0].style.transform = ''; return; }
+      var h = items[0].offsetHeight + GAP;
+      var cr = c.getBoundingClientRect();
+      var s = hr.top + BASE - cr.top; // cuánto ha avanzado el scroll respecto al inicio de la pila
+      var cov = [];
+      for (var j = 0; j < n; j++) {
+        var sj = j * h - Math.min(j, CAP) * OFF; // scroll al que la tarjeta j llega a su posición fija
+        cov.push(clamp(1 - (sj - s) / h, 0, 1));
+      }
+      for (var i = 0; i < n; i++) {
+        var k = 0;
+        for (var m = i + 1; m < n; m++) k += cov[m];
+        var sc = Math.max(MIN, 1 - K * k);
+        cards[i].style.transform = sc < 0.9995 ? 'scale(' + sc.toFixed(4) + ')' : '';
+      }
+    });
+  }
+  function req(){ if (!pend) { pend = true; requestAnimationFrame(update); } }
+  home.addEventListener('scroll', req, { passive: true });
+  window.addEventListener('resize', req);
+  var inner = document.getElementById('home-inner');
+  if (inner) new MutationObserver(req).observe(inner, { childList: true, subtree: true });
+  req();
+
+  /* ---------------- Felicitación + explosión de partículas ---------------- */
+  var ov = document.createElement('div');
+  ov.id = 'felic';
+  ov.innerHTML = '<canvas></canvas><div class="felic-box"></div>';
+  document.body.appendChild(ov);
+  var cv = ov.querySelector('canvas');
+  var box = ov.querySelector('.felic-box');
+  var ctx = cv.getContext('2d');
+  var parts = [], raf = 0, W = 0, H = 0, DPR = 1, timers = [];
+  var COLORS = ['#227EF6','#0D18A8','#7fb4ff','#ffffff','#ffd54f','#9cc6ff'];
+
+  function sizeCanvas(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  function burst(x, y, count, power){
+    for (var i = 0; i < count; i++) {
+      var a = Math.random() * Math.PI * 2;
+      var sp = (0.35 + Math.random() * 0.65) * power;
+      parts.push({
+        x: x, y: y,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - power * 0.12,
+        g: 0.14 + Math.random() * 0.08,
+        r: 2 + Math.random() * 3.6,
+        rect: Math.random() < 0.4,
+        rot: Math.random() * 6.28, vr: (Math.random() - .5) * 0.4,
+        life: 1, decay: 0.006 + Math.random() * 0.007,
+        c: COLORS[(Math.random() * COLORS.length) | 0]
+      });
+    }
+  }
+  function loop(){
+    ctx.clearRect(0, 0, W, H);
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.vx *= 0.985; p.vy = p.vy * 0.985 + p.g;
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= p.decay;
+      if (p.life <= 0 || p.y > H + 40) { parts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.min(1, p.life * 1.4);
+      ctx.fillStyle = p.c;
+      if (p.rect) {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillRect(-p.r, -p.r * 0.6, p.r * 2, p.r * 1.2); ctx.restore();
+      } else {
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (parts.length || ov.classList.contains('on')) raf = requestAnimationFrame(loop);
+    else raf = 0;
+  }
+
+  function esc(t){ var d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; }
+
+  function abrir(it, origen){
+    var esCumple = it.icono === '🎂';
+    var kicker = it.texto || '';
+    var titulo, msg;
+    if (esCumple) {
+      titulo = '¡Feliz cumpleaños!';
+      msg = it.pendiente
+        ? 'Todo el equipo de Zubex te desea un cumpleaños increíble. ¡Disfruta tu fin de semana!'
+        : 'Todo el equipo de Zubex te desea un día lleno de alegría. ¡Que sigas cumpliendo muchos más!';
+    } else {
+      titulo = '¡Felicidades!';
+      msg = 'Gracias por tu esfuerzo, compromiso y por ser parte de la familia Zubex. ¡Vamos por muchos años más!';
+    }
+    var visual = it.foto
+      ? '<img class="felic-foto" src="' + it.foto + '" alt="">'
+      : '<div class="felic-emoji">' + esc(it.icono) + '</div>';
+    cur = it;
+    box.innerHTML = '<button type="button" class="felic-x" aria-label="Cerrar">✕</button>' + visual +
+      '<div class="felic-kicker">' + esc(kicker) + '</div>' +
+      '<h2 class="felic-titulo">' + esc(titulo) + '</h2>' +
+      '<div class="felic-nombre">' + esc(it.titulo) + '</div>' +
+      '<p class="felic-msg">' + esc(msg) + '</p>' +
+      '<div class="felic-msgs"></div>' +
+      '<div class="felic-form">' +
+        '<textarea class="felic-ta" rows="3" maxlength="200" placeholder="Escribe tu mensaje de felicitación…"></textarea>' +
+        '<input class="felic-au" type="text" maxlength="40" placeholder="Tu nombre (opcional)">' +
+        '<button type="button" class="felic-enviar">Enviar felicitación</button>' +
+        '<div class="felic-status"></div>' +
+      '</div>' +
+      '<div class="felic-cerrar">Cerrar</div>';
+    pintarMsgs();
+
+    sizeCanvas();
+    parts = [];
+    ov.classList.add('on');
+    document.addEventListener('keydown', onKey);
+
+    if (!reduce) {
+      var r = origen && origen.getBoundingClientRect();
+      var ox = r ? r.left + r.width / 2 : W / 2;
+      var oy = r ? r.top + r.height / 2 : H / 2;
+      var pw = Math.max(10, Math.min(W, H) / 38);
+      burst(ox, oy, 160, pw);
+      timers.push(setTimeout(function(){ burst(W / 2, H * 0.42, 260, pw * 1.25); }, 260));
+      timers.push(setTimeout(function(){ burst(W * 0.22, H * 0.55, 90, pw * 0.9); burst(W * 0.78, H * 0.55, 90, pw * 0.9); }, 620));
+      if (!raf) raf = requestAnimationFrame(loop);
+    }
+  }
+  var cur = null, ultimoEnvio = 0;
+
+  function pintarMsgs(){
+    var cont = box.querySelector('.felic-msgs');
+    if (!cont || !cur) return;
+    var l = felicDe(cur);
+    cont.innerHTML = l.length
+      ? l.map(function(n){ return '<div class="m">“' + esc(n.mensaje) + '”' + (n.autor ? ' <b>— ' + esc(n.autor) + '</b>' : '') + '</div>'; }).join('')
+      : '<div class="vacio">Sé el primero en dejar un mensaje 💙</div>';
+    cont.scrollTop = cont.scrollHeight;
+  }
+  window._felicRefresh = function(){ if (cur && ov.classList.contains('on')) pintarMsgs(); };
+
+  function enviar(){
+    var ta = box.querySelector('.felic-ta'), au = box.querySelector('.felic-au');
+    var st = box.querySelector('.felic-status'), btn = box.querySelector('.felic-enviar');
+    var texto = ta.value.trim().slice(0, 200), autor = au.value.trim().slice(0, 40);
+    if (!texto) { st.textContent = 'Escribe un mensaje primero.'; return; }
+    if (typeof avisosDb === 'undefined' || !avisosDb || !cur || !cur.clave) { st.textContent = 'No se pudo enviar (sin conexión con la base de datos).'; return; }
+    if (Date.now() - ultimoEnvio < 5000) { st.textContent = 'Espera unos segundos antes de enviar otro.'; return; }
+    ultimoEnvio = Date.now();
+    btn.disabled = true; st.textContent = 'Enviando…';
+    avisosDb.ref('felicitaciones/' + cur.clave).push({ mensaje: texto, autor: autor, fecha: Date.now() })
+      .then(function(){
+        ta.value = ''; btn.disabled = false; st.textContent = '¡Mensaje enviado! 🎉';
+        if (!reduce) {
+          burst(W / 2, H * 0.5, 120, Math.max(10, Math.min(W, H) / 40));
+          if (!raf) raf = requestAnimationFrame(loop);
+        }
+      })
+      .catch(function(){ btn.disabled = false; st.textContent = 'No se pudo enviar. Intenta de nuevo.'; });
+  }
+  box.addEventListener('click', function(e){
+    var t = e.target;
+    if (t.classList.contains('felic-enviar')) enviar();
+    else if (t.classList.contains('felic-x') || t.classList.contains('felic-cerrar') || t === box) cerrar();
+  });
+
+  function cerrar(){
+    cur = null;
+    ov.classList.remove('on');
+    timers.forEach(clearTimeout); timers = [];
+    parts = [];
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    ctx.clearRect(0, 0, W, H);
+    document.removeEventListener('keydown', onKey);
+  }
+  function onKey(e){ if (e.key === 'Escape') { e.preventDefault(); cerrar(); } }
+  ov.addEventListener('click', function(e){ if (e.target === ov) cerrar(); });
+  window.addEventListener('resize', function(){ if (ov.classList.contains('on')) sizeCanvas(); });
+
+  function manejar(e){
+    var card = e.target.closest && e.target.closest('.stack-card');
+    if (!card) return;
+    var cont = card.closest('#avisos-cumple, #avisos-aniversario');
+    if (!cont) return;
+    var data = (window._avisosData || {})[cont.id];
+    var it = data && data[parseInt(card.getAttribute('data-idx'), 10)];
+    if (it) abrir(it, card);
+  }
+  conts.forEach(function(c){
+    if (!c) return;
+    c.addEventListener('click', manejar);
+    c.addEventListener('keydown', function(e){
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('stack-card')) {
+        e.preventDefault(); manejar(e);
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
