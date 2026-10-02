@@ -541,23 +541,35 @@
   .quick-card-icon svg{ width:100%; height:100%; }
   .quick-card-label{ font-size:13.5px; font-weight:600; color:var(--text); }
 
+  /* Anuncios: editorial — una columna, tipografía grande, barra de acento,
+     en vez de tarjetas iguales en cuadrícula. */
+  /* Anuncios: banner de color sólido (no tarjeta blanca) — contraste real
+     contra el resto de la página. */
   #anuncios{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,300px),1fr));
-    gap:14px; text-align:left; margin-bottom:34px;
+    display:flex; flex-direction:column; gap:14px; text-align:left; margin-bottom:34px;
   }
   .anuncio-card{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:18px 20px;
+    position:relative;
+    padding:22px 26px;
+    border-radius:18px;
+    background:linear-gradient(120deg, var(--zx-blue-dark), var(--zx-blue));
+    overflow:hidden;
   }
-  .anuncio-titulo{ font-size:16px; font-weight:700; color:var(--text); margin-bottom:5px; }
-  .anuncio-texto{ font-size:14px; color:var(--muted); margin-bottom:8px; line-height:1.4; }
-  .anuncio-fecha{ font-size:12px; color:var(--muted); }
+  .anuncio-card::after{
+    content:"📣";
+    position:absolute; right:18px; top:50%; transform:translateY(-50%);
+    font-size:54px; opacity:.16; pointer-events:none;
+  }
+  .anuncio-fecha{
+    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    color:rgba(255,255,255,.75); margin-bottom:6px; display:block;
+  }
+  .anuncio-titulo{ font-size:20px; font-weight:700; color:#fff; margin-bottom:5px; letter-spacing:-.01em; max-width:85%; }
+  .anuncio-texto{ font-size:14px; color:rgba(255,255,255,.88); line-height:1.5; max-width:68ch; }
 
   /* ---------- AVISOS RH: cumpleaños / aniversarios / eventos ---------- */
-  /* Cumpleaños y aniversarios: dos columnas — Hoy (izquierda) y
-     Fin de semana / por cumplir-cumplido (derecha). */
+  /* Cumpleaños y aniversarios: tarjetas apiladas — sticky, y se van
+     encogiendo (apilando) conforme la siguiente las cubre al hacer scroll. */
   #avisos-cumple, #avisos-aniversario{
     display:grid; grid-template-columns:1fr 1fr; gap:20px;
     text-align:left; margin:0 0 34px; max-width:920px;
@@ -565,10 +577,10 @@
   @media (max-width:680px){
     #avisos-cumple, #avisos-aniversario{ grid-template-columns:1fr; }
   }
-  .avisos-col{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+  .avisos-col{ position:relative; min-width:0; }
   .avisos-col-titulo{
     font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
-    color:var(--muted); margin-bottom:2px;
+    color:var(--muted); margin-bottom:10px;
   }
   .stack-item{
     position:sticky;
@@ -682,10 +694,27 @@
   }
   .felic-enviar:disabled{ opacity:.6; cursor:default; }
   .felic-status{ min-height:16px; font-size:12.5px; color:#9cc6ff; text-align:center; }
+  /* Eventos de la empresa: boletos horizontales con scroll — nada de
+     cuadrícula ni línea de tiempo tenue. */
   #avisos-eventos{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,320px),1fr));
-    gap:14px; text-align:left; margin-bottom:34px;
+    display:flex; gap:16px; overflow-x:auto; margin:0 0 34px; padding:4px 4px 10px;
+    scroll-snap-type:x proximity;
   }
+  .evento-item{
+    flex:0 0 auto; width:220px; scroll-snap-align:start;
+    border-radius:16px; overflow:hidden; background:var(--panel);
+    border:1px solid var(--border);
+    box-shadow:0 8px 22px rgba(13,24,168,.08);
+  }
+  .evento-foto{ width:100%; height:100px; object-fit:cover; display:block; background:#eef1fa; }
+  .evento-fecha{
+    display:flex; align-items:baseline; gap:6px; padding:14px 16px 0;
+  }
+  .evento-dia{ font-size:30px; font-weight:800; color:var(--zx-blue-dark); line-height:1; }
+  .evento-mes{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .evento-cuerpo{ padding:8px 16px 16px; min-width:0; }
+  .evento-titulo{ font-size:14.5px; font-weight:700; color:var(--text); overflow-wrap:anywhere; }
+  .evento-texto{ font-size:12.5px; color:var(--muted); margin-top:3px; overflow-wrap:anywhere; }
   .aviso-card{
     min-width:0;
     background:var(--panel);
@@ -708,22 +737,27 @@
   .aviso-texto{ font-size:14px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
   .avisos-empty{ grid-column:1 / -1; font-size:13.5px; color:var(--muted); font-style:italic; }
 
+  /* Videos: franja oscura tipo "cine" — contraste real contra el resto de
+     la página, que es clara. */
   #avisos-videos{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,340px),1fr));
-    gap:16px; text-align:left; margin-bottom:34px;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%,380px),1fr));
+    gap:18px; text-align:left; margin-bottom:34px;
+    background:#0b0e17; border-radius:20px; padding:22px;
   }
+  #avisos-videos .avisos-empty{ color:rgba(255,255,255,.55); grid-column:1/-1; }
   .video-card{
     min-width:0;
-    background:var(--panel); border:1px solid var(--border); border-radius:14px;
-    padding:16px 18px;
+    background:#141a2b; border:1px solid rgba(255,255,255,.08); border-radius:14px;
+    padding:0 0 16px; overflow:hidden;
   }
-  .video-card-titulo{ font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px; }
-  .video-card-texto{ font-size:13.5px; color:var(--muted); margin-bottom:10px; }
+  .video-card-texto-wrap{ padding:14px 16px 0; }
+  .video-card-titulo{ font-size:15.5px; font-weight:700; color:#fff; margin-bottom:4px; }
+  .video-card-texto{ font-size:13px; color:rgba(255,255,255,.6); }
   .video-card video, .video-card iframe{
-    width:100%; max-height:240px; border-radius:8px; border:none; display:block;
+    width:100%; aspect-ratio:16/9; max-height:none; border-radius:0; border:none; display:block;
     background:#000;
   }
-  .video-card a.video-link{ font-size:14px; color:var(--zx-blue); font-weight:600; }
+  .video-card a.video-link{ font-size:14px; color:#7fb4ff; font-weight:600; margin:16px 16px 0; display:inline-block; }
 
   /* ---------- FadeIn al entrar en vista ---------- */
   .reveal{
@@ -1123,9 +1157,9 @@ function renderAnuncios(anuncios) {
     const card = document.createElement("div");
     card.className = "anuncio-card";
     card.innerHTML =
+      "<span class=\"anuncio-fecha\">" + (a.fecha || "") + "</span>" +
       "<div class=\"anuncio-titulo\">" + a.titulo + "</div>" +
-      "<div class=\"anuncio-texto\">" + (a.texto || "") + "</div>" +
-      "<div class=\"anuncio-fecha\">" + (a.fecha || "") + "</div>";
+      "<div class=\"anuncio-texto\">" + (a.texto || "") + "</div>";
     cont.appendChild(card);
   });
   if (resto.length === 0) {
@@ -2284,39 +2318,42 @@ function renderAvisoLista(contenedorId, items, mensajeVacio) {
     el.innerHTML = `<div class="avisos-empty">${mensajeVacio}</div>`;
     return;
   }
-  // Cumpleaños y aniversarios: dos columnas clicables (felicitación) —
-  // "Hoy" a la izquierda, lo corrido por fin de semana (por cumplir/cumplido)
-  // a la derecha.
+  // Cumpleaños y aniversarios: dos columnas (Hoy / Fin de semana), cada
+  // una con sus propias tarjetas apiladas (sticky + se encogen al apilarse).
   if (contenedorId === 'avisos-cumple' || contenedorId === 'avisos-aniversario') {
     window._avisosData = window._avisosData || {};
     window._avisosData[contenedorId] = items;
-    const tarjeta = (it, i) => `
-      <div class="aviso-card stack-card ${it.pendiente ? 'pendiente' : ''}" data-idx="${i}" role="button" tabindex="0" aria-label="Felicitar a ${String(it.titulo).replace(/"/g, '&quot;')}">
-        ${it.foto ? `<img class="aviso-foto" src="${it.foto}" alt="">` : `<div class="aviso-icon">${it.icono}</div>`}
-        <div>
-          <div class="aviso-titulo">${it.titulo}</div>
-          <div class="aviso-texto">${it.texto}</div>
-          ${notasCard(it)}
+    const tarjeta = (it, i, j) => `
+      <div class="stack-item" style="--i:${Math.min(j, 5)}">
+        <div class="aviso-card stack-card ${it.pendiente ? 'pendiente' : ''}" data-idx="${i}" role="button" tabindex="0" aria-label="Felicitar a ${String(it.titulo).replace(/"/g, '&quot;')}">
+          ${it.foto ? `<img class="aviso-foto" src="${it.foto}" alt="">` : `<div class="aviso-icon">${it.icono}</div>`}
+          <div>
+            <div class="aviso-titulo">${it.titulo}</div>
+            <div class="aviso-texto">${it.texto}</div>
+            ${notasCard(it)}
+          </div>
+          <span class="felic-cta">🎈 Felicitar</span>
         </div>
-        <span class="felic-cta">🎈 Felicitar</span>
       </div>`;
     const hoyLista = [];
     const proxLista = [];
-    items.forEach((it, i) => (it.estado === 'hoy' ? hoyLista : proxLista).push(tarjeta(it, i)));
+    items.forEach((it, i) => (it.estado === 'hoy' ? hoyLista : proxLista).push([it, i]));
     const columna = (titulo, lista, vacio) => `
       <div class="avisos-col">
         <div class="avisos-col-titulo">${titulo}</div>
-        ${lista.length ? lista.join('') : `<div class="avisos-empty">${vacio}</div>`}
+        ${lista.length ? lista.map(([it, i], j) => tarjeta(it, i, j)).join('') : `<div class="avisos-empty">${vacio}</div>`}
       </div>`;
     el.innerHTML = columna('Hoy', hoyLista, 'Nadie hoy.') + columna('Fin de semana', proxLista, 'Nada por venir.');
     return;
   }
+  // Eventos de la empresa: boletos horizontales con scroll.
   el.innerHTML = items.map(it => `
-    <div class="aviso-card ${it.pendiente ? 'pendiente' : ''}">
-      ${it.foto ? `<img class="aviso-foto${it.fotoRect ? ' rect' : ''}" src="${it.foto}">` : `<div class="aviso-icon">${it.icono}</div>`}
-      <div>
-        <div class="aviso-titulo">${it.titulo}</div>
-        <div class="aviso-texto">${it.texto}</div>
+    <div class="evento-item">
+      ${it.foto ? `<img class="evento-foto" src="${it.foto}" alt="">` : ''}
+      <div class="evento-fecha"><span class="evento-dia">${it.diaNum}</span><span class="evento-mes">${it.mesCorto}</span></div>
+      <div class="evento-cuerpo">
+        <div class="evento-titulo">${it.titulo}</div>
+        ${it.texto ? `<div class="evento-texto">${it.texto}</div>` : ''}
       </div>
     </div>`).join('');
 }
@@ -2349,9 +2386,11 @@ function renderVideosLista(items, mensajeVacio) {
         : `<a class="video-link" href="${emb.src}" target="_blank" rel="noopener">Ver video ↗</a>`;
     }
     return `<div class="video-card">
-      <div class="video-card-titulo">${v.titulo}</div>
-      ${v.descripcion ? `<div class="video-card-texto">${v.descripcion}</div>` : ''}
       ${cuerpo}
+      <div class="video-card-texto-wrap">
+        <div class="video-card-titulo">${v.titulo}</div>
+        ${v.descripcion ? `<div class="video-card-texto">${v.descripcion}</div>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -2414,8 +2453,13 @@ function cargarAvisos() {
       .sort((a, b) => a.fecha.localeCompare(b.fecha))
       .slice(0, 6)
       .map(e => {
-        const [y, m, d] = e.fecha.split('-');
-        return { icono: '📅', foto: e.foto, fotoRect: true, titulo: e.titulo, texto: `${d}/${m}/${y}${e.descripcion ? ' — ' + e.descripcion : ''}`, pendiente: false };
+        const [, m, d] = e.fecha.split('-');
+        const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        return {
+          icono: '📅', foto: e.foto, titulo: e.titulo, texto: e.descripcion || '',
+          diaNum: parseInt(d, 10), mesCorto: MESES_CORTOS[parseInt(m, 10) - 1] || '',
+          pendiente: false
+        };
       });
     renderAvisoLista('avisos-eventos', proximos, 'No hay eventos próximos.');
   });
@@ -3238,7 +3282,11 @@ window.disableThreadsBackground = initThreadsBackground(document.getElementById(
   var home = document.getElementById('home');
   if (!home) return;
   var BASE = 12, OFF = 14, CAP = 5, GAP = 24, K = 0.04, MIN = 0.8;
-  var conts = ['avisos-cumple','avisos-aniversario'].map(function(id){ return document.getElementById(id); });
+  // Cada sub-columna (Hoy / Fin de semana, dentro de cumpleaños y de
+  // aniversarios) apila sus propias tarjetas de forma independiente.
+  var conts = Array.prototype.slice.call(
+    document.querySelectorAll('#avisos-cumple .avisos-col, #avisos-aniversario .avisos-col')
+  );
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var pend = false;
 
