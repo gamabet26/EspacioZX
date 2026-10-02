@@ -604,31 +604,32 @@
   #felic canvas{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
   .felic-box{
     position:relative; text-align:center; color:#fff;
-    padding:32px 28px; max-width:min(92vw,640px);
+    padding:22px 20px; max-width:min(92vw,460px);
     opacity:0; transform:scale(.8) translateY(14px);
     transition:opacity .6s ease .45s, transform .7s cubic-bezier(.22,1,.36,1) .45s;
   }
   #felic.on .felic-box{ opacity:1; transform:none; }
   .felic-foto{
-    width:112px; height:112px; border-radius:50%; object-fit:cover;
-    border:3px solid #227EF6; box-shadow:0 0 34px rgba(34,126,246,.7);
-    margin:0 auto 18px; display:block; background:#141a2b;
+    width:72px; height:72px; border-radius:50%; object-fit:cover;
+    border:3px solid #227EF6; box-shadow:0 0 24px rgba(34,126,246,.7);
+    margin:0 auto 10px; display:block; background:#141a2b;
   }
-  .felic-emoji{ font-size:84px; line-height:1; margin-bottom:14px; }
-  .felic-kicker{ font-size:clamp(14px,1.6vw,18px); letter-spacing:.14em; text-transform:uppercase; color:#9cc6ff; font-weight:600; margin-bottom:8px; }
+  .felic-emoji{ font-size:48px; line-height:1; margin-bottom:8px; }
+  .felic-kicker{ font-size:clamp(12px,1.4vw,14px); letter-spacing:.12em; text-transform:uppercase; color:#9cc6ff; font-weight:600; margin-bottom:6px; }
   .felic-titulo{
-    margin:0 0 10px; font-size:clamp(30px,6vw,56px); font-weight:800; line-height:1.05; text-transform:uppercase;
+    margin:0 0 6px; font-size:clamp(22px,6vw,34px); font-weight:800; line-height:1.08; text-transform:uppercase;
+    overflow-wrap:anywhere; word-break:break-word;
     background:linear-gradient(180deg,#ffffff 0%,#7fb4ff 100%);
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
   }
-  .felic-nombre{ font-size:clamp(20px,3.2vw,30px); font-weight:700; margin-bottom:12px; overflow-wrap:anywhere; }
-  .felic-msg{ font-size:clamp(14px,1.8vw,18px); color:rgba(255,255,255,.82); line-height:1.5; margin:0 auto; max-width:46ch; }
-  .felic-cerrar{ margin-top:18px; font-size:12px; color:rgba(255,255,255,.5); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
-  .felic-box{ max-height:94vh; overflow-y:auto; width:min(92vw,440px); }
+  .felic-nombre{ font-size:clamp(14px,3vw,19px); font-weight:700; margin-bottom:8px; overflow-wrap:anywhere; }
+  .felic-msg{ font-size:clamp(12.5px,1.6vw,14.5px); color:rgba(255,255,255,.82); line-height:1.45; margin:0 auto; max-width:42ch; }
+  .felic-cerrar{ margin-top:12px; font-size:11px; color:rgba(255,255,255,.5); letter-spacing:.08em; text-transform:uppercase; cursor:pointer; }
+  .felic-box{ max-height:92vh; overflow-y:auto; overflow-x:hidden; width:min(92vw,460px); }
   .felic-x{
-    position:absolute; top:6px; right:6px; width:34px; height:34px; border-radius:50%;
+    position:absolute; top:6px; right:6px; width:30px; height:30px; border-radius:50%;
     border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#fff;
-    font-size:16px; line-height:1; cursor:pointer;
+    font-size:14px; line-height:1; cursor:pointer;
   }
   .felic-x:hover{ background:rgba(255,255,255,.18); }
 
@@ -646,28 +647,28 @@
 
   /* mensajes + formulario dentro del overlay */
   .felic-msgs{
-    margin:16px auto 0; max-width:480px; max-height:150px; overflow-y:auto;
-    display:flex; flex-direction:column; gap:6px; text-align:left;
+    margin:10px auto 0; max-width:420px; max-height:90px; overflow-y:auto; overflow-x:hidden;
+    display:flex; flex-direction:column; gap:5px; text-align:left;
   }
   .felic-msgs .m{
-    font-size:13.5px; color:#fff; background:rgba(255,255,255,.10);
-    border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:8px 12px;
+    font-size:12.5px; color:#fff; background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:6px 10px;
     overflow-wrap:anywhere;
   }
   .felic-msgs .m b{ color:#9cc6ff; font-weight:600; }
-  .felic-msgs .vacio{ font-size:12.5px; color:rgba(255,255,255,.55); text-align:center; font-style:italic; }
-  .felic-form{ margin:14px auto 0; max-width:480px; display:flex; flex-direction:column; gap:8px; text-align:left; }
+  .felic-msgs .vacio{ font-size:12px; color:rgba(255,255,255,.55); text-align:center; font-style:italic; }
+  .felic-form{ margin:10px auto 0; max-width:420px; display:flex; flex-direction:column; gap:6px; text-align:left; }
   .felic-form textarea, .felic-form input{
-    width:100%; font:inherit; font-size:14px; color:#fff;
+    width:100%; font:inherit; font-size:13px; color:#fff;
     background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.25);
-    border-radius:12px; padding:10px 12px; outline:none; resize:none;
+    border-radius:12px; padding:8px 10px; outline:none; resize:none;
   }
   .felic-form textarea::placeholder, .felic-form input::placeholder{ color:rgba(255,255,255,.5); }
   .felic-form textarea:focus, .felic-form input:focus{ border-color:#227EF6; box-shadow:0 0 0 3px rgba(34,126,246,.35); }
   .felic-enviar{
-    border:0; border-radius:999px; padding:12px 24px; cursor:pointer;
+    border:0; border-radius:999px; padding:9px 20px; cursor:pointer;
     background:linear-gradient(120deg,#0D18A8,#227EF6); color:#fff;
-    font:600 14px/1 inherit; letter-spacing:.03em;
+    font:600 13.5px/1 inherit; letter-spacing:.03em;
     box-shadow:0 10px 26px rgba(34,126,246,.35);
   }
   .felic-enviar:disabled{ opacity:.6; cursor:default; }
@@ -3340,7 +3341,7 @@ window.disableThreadsBackground = initThreadsBackground(document.getElementById(
       '<p class="felic-msg">' + esc(msg) + '</p>' +
       '<div class="felic-msgs"></div>' +
       '<div class="felic-form">' +
-        '<textarea class="felic-ta" rows="3" maxlength="200" placeholder="Escribe tu mensaje de felicitación…"></textarea>' +
+        '<textarea class="felic-ta" rows="2" maxlength="200" placeholder="Escribe tu mensaje de felicitación…"></textarea>' +
         '<input class="felic-au" type="text" maxlength="40" placeholder="Tu nombre (opcional)">' +
         '<button type="button" class="felic-enviar">Enviar felicitación</button>' +
         '<div class="felic-status"></div>' +
