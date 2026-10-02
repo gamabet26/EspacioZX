@@ -556,10 +556,19 @@
   .anuncio-fecha{ font-size:12px; color:var(--muted); }
 
   /* ---------- AVISOS RH: cumpleaños / aniversarios / eventos ---------- */
-  /* Cumpleaños y aniversarios: tarjetas apiladas tipo "Project" (sticky + scale al hacer scroll) */
+  /* Cumpleaños y aniversarios: dos columnas — Hoy (izquierda) y
+     Fin de semana / por cumplir-cumplido (derecha). */
   #avisos-cumple, #avisos-aniversario{
-    display:block; text-align:left; margin:0 0 34px; position:relative;
-    max-width:540px;
+    display:grid; grid-template-columns:1fr 1fr; gap:20px;
+    text-align:left; margin:0 0 34px; max-width:920px;
+  }
+  @media (max-width:680px){
+    #avisos-cumple, #avisos-aniversario{ grid-template-columns:1fr; }
+  }
+  .avisos-col{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+  .avisos-col-titulo{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--muted); margin-bottom:2px;
   }
   .stack-item{
     position:sticky;
@@ -2275,12 +2284,13 @@ function renderAvisoLista(contenedorId, items, mensajeVacio) {
     el.innerHTML = `<div class="avisos-empty">${mensajeVacio}</div>`;
     return;
   }
-  // Cumpleaños y aniversarios: tarjetas apiladas y clicables (felicitación)
+  // Cumpleaños y aniversarios: dos columnas clicables (felicitación) —
+  // "Hoy" a la izquierda, lo corrido por fin de semana (por cumplir/cumplido)
+  // a la derecha.
   if (contenedorId === 'avisos-cumple' || contenedorId === 'avisos-aniversario') {
     window._avisosData = window._avisosData || {};
     window._avisosData[contenedorId] = items;
-    el.innerHTML = items.map((it, i) => `
-    <div class="stack-item" style="--i:${Math.min(i, 5)}">
+    const tarjeta = (it, i) => `
       <div class="aviso-card stack-card ${it.pendiente ? 'pendiente' : ''}" data-idx="${i}" role="button" tabindex="0" aria-label="Felicitar a ${String(it.titulo).replace(/"/g, '&quot;')}">
         ${it.foto ? `<img class="aviso-foto" src="${it.foto}" alt="">` : `<div class="aviso-icon">${it.icono}</div>`}
         <div>
@@ -2289,8 +2299,16 @@ function renderAvisoLista(contenedorId, items, mensajeVacio) {
           ${notasCard(it)}
         </div>
         <span class="felic-cta">🎈 Felicitar</span>
-      </div>
-    </div>`).join('');
+      </div>`;
+    const hoyLista = [];
+    const proxLista = [];
+    items.forEach((it, i) => (it.estado === 'hoy' ? hoyLista : proxLista).push(tarjeta(it, i)));
+    const columna = (titulo, lista, vacio) => `
+      <div class="avisos-col">
+        <div class="avisos-col-titulo">${titulo}</div>
+        ${lista.length ? lista.join('') : `<div class="avisos-empty">${vacio}</div>`}
+      </div>`;
+    el.innerHTML = columna('Hoy', hoyLista, 'Nadie hoy.') + columna('Fin de semana', proxLista, 'Nada por venir.');
     return;
   }
   el.innerHTML = items.map(it => `
@@ -2358,11 +2376,11 @@ function cargarAvisos() {
       if (p.fechaNacimiento) {
         const estado = estadoDeFecha(p.fechaNacimiento, hoy);
         if (estado === 'hoy') {
-          cumples.push({ icono: '🎂', foto: p.foto, titulo: p.nombre, texto: '¡Hoy cumple años!', pendiente: false });
+          cumples.push({ icono: '🎂', foto: p.foto, titulo: p.nombre, texto: '¡Hoy cumple años!', pendiente: false, estado: 'hoy' });
         } else if (estado === 'porCumplir') {
-          cumples.push({ icono: '🎂', foto: p.foto, titulo: p.nombre, texto: 'Por cumplir años este fin de semana', pendiente: true });
+          cumples.push({ icono: '🎂', foto: p.foto, titulo: p.nombre, texto: 'Por cumplir años este fin de semana', pendiente: true, estado: 'porCumplir' });
         } else if (estado === 'cumplido') {
-          cumples.push({ icono: '🎂', foto: p.foto, titulo: p.nombre, texto: 'Cumplió años el fin de semana', pendiente: false });
+          cumples.push({ icono: '🎂', foto: p.foto, titulo: p.nombre, texto: 'Cumplió años el fin de semana', pendiente: false, estado: 'cumplido' });
         }
       }
       if (p.fechaIngreso) {
@@ -2371,11 +2389,11 @@ function cargarAvisos() {
           const anos = hoy.getFullYear() - parseInt(p.fechaIngreso.split('-')[0], 10);
           if (anos > 0) {
             if (estado === 'hoy') {
-              aniversarios.push({ icono: '🎉', foto: p.foto, titulo: p.nombre, texto: `¡Hoy cumple ${anos} ${anos===1?'año':'años'} en Zubex!`, pendiente: false });
+              aniversarios.push({ icono: '🎉', foto: p.foto, titulo: p.nombre, texto: `¡Hoy cumple ${anos} ${anos===1?'año':'años'} en Zubex!`, pendiente: false, estado: 'hoy' });
             } else if (estado === 'porCumplir') {
-              aniversarios.push({ icono: '🎉', foto: p.foto, titulo: p.nombre, texto: `Por cumplir ${anos} ${anos===1?'año':'años'} este fin de semana`, pendiente: true });
+              aniversarios.push({ icono: '🎉', foto: p.foto, titulo: p.nombre, texto: `Por cumplir ${anos} ${anos===1?'año':'años'} este fin de semana`, pendiente: true, estado: 'porCumplir' });
             } else if (estado === 'cumplido') {
-              aniversarios.push({ icono: '🎉', foto: p.foto, titulo: p.nombre, texto: `Cumplió ${anos} ${anos===1?'año':'años'} el fin de semana`, pendiente: false });
+              aniversarios.push({ icono: '🎉', foto: p.foto, titulo: p.nombre, texto: `Cumplió ${anos} ${anos===1?'año':'años'} el fin de semana`, pendiente: false, estado: 'cumplido' });
             }
           }
         }
