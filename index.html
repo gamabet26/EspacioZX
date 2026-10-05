@@ -747,6 +747,34 @@
   .aviso-texto{ font-size:14px; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
   .avisos-empty{ grid-column:1 / -1; font-size:13.5px; color:var(--muted); font-style:italic; }
 
+  /* Organigrama incrustado (vista pública de solo lectura de Avisos RH).
+     Una capa transparente evita que la rueda del mouse quede "atrapada" en el
+     organigrama (ahí hace zoom) mientras haces scroll en Inicio: se activa con clic. */
+  #org-embed{
+    position:relative; height:560px; border:1px solid var(--border); border-radius:16px;
+    overflow:hidden; background:var(--panel); margin-bottom:8px;
+    box-shadow:0 10px 30px rgba(13,24,168,.08); text-align:left;
+  }
+  #org-embed iframe{ width:100%; height:100%; border:0; display:block; background:#fff; }
+  #org-embed-cap{
+    position:absolute; inset:0; border:0; cursor:pointer; padding:0 0 18px;
+    display:flex; align-items:flex-end; justify-content:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0) 65%, rgba(13,24,168,.10));
+  }
+  .org-embed-pill{
+    background:rgba(13,24,168,.9); color:#fff; font:600 12.5px/1 inherit;
+    padding:9px 16px; border-radius:999px; box-shadow:0 6px 18px rgba(13,24,168,.35);
+  }
+  #org-embed-cap:hover .org-embed-pill{ background:var(--zx-blue); }
+  #org-embed.activo #org-embed-cap{ display:none; }
+  #org-embed-pie{ text-align:right; margin-bottom:34px; }
+  #org-embed-pie button{
+    border:1px solid var(--border); background:var(--panel); color:var(--zx-blue-dark);
+    border-radius:999px; padding:7px 14px; font:600 12.5px/1 inherit; cursor:pointer;
+  }
+  #org-embed-pie button:hover{ background:rgba(34,126,246,.08); }
+  @media (max-width:680px){ #org-embed{ height:440px; } }
+
   /* Videos: franja oscura tipo "cine" — contraste real contra el resto de
      la página, que es clara. */
   #avisos-videos{
@@ -891,6 +919,15 @@
 
         <div class="home-section-title"><span class="ti">📅</span> Eventos de la empresa</div>
         <div id="avisos-eventos"></div>
+
+        <div class="home-section-title"><span class="ti">🧭</span> Organigrama</div>
+        <div id="org-embed">
+          <iframe id="org-embed-frame" title="Organigrama Zubex" allow="fullscreen"></iframe>
+          <button type="button" id="org-embed-cap" aria-label="Explorar el organigrama">
+            <span class="org-embed-pill">Clic para explorar</span>
+          </button>
+        </div>
+        <div id="org-embed-pie"><button type="button" onclick="abrirOrganigrama()">⛶ Abrir en pantalla completa</button></div>
 
         <div class="home-section-title"><span class="ti">🎬</span> Videos</div>
         <div id="avisos-videos"></div>
@@ -1247,12 +1284,16 @@ function abrirApp(app, itemEl) {
   frame.src = app.url;
 }
 
-// Acceso directo desde el sidebar: abre Avisos RH directo en la sección
-// de Organigrama (ajusta el "#organigrama" si Avisos RH usa otro nombre
-// de sección/hash para esa pestaña).
+// Ícono "Organigrama" de la barra superior: abre la vista pública de SOLO
+// LECTURA de Avisos RH (?vista=organigrama) — sin login, para que todos
+// lo vean; quien administra lo edita desde Avisos RH.
+function urlOrganigrama() {
+  const app = appsPlanas.find(a => a.id === "avisos-rh");
+  const base = ((app && app.url) || "https://zxerpdev.github.io/Avisos-RH/").split(/[?#]/)[0].replace(/\/?$/, "/");
+  return base + "?vista=organigrama";
+}
 function abrirOrganigrama() {
-  const base = (appsPlanas.find(a => a.id === "avisos-rh") || {}).url || "https://zxerpdev.github.io/Avisos-RH/";
-  abrirApp({ id: "avisos-rh", nombre: "Organigrama", url: base.replace(/\/?(#.*)?$/, "/") + "#organigrama" }, null);
+  abrirApp({ id: "avisos-rh", nombre: "Organigrama", url: urlOrganigrama() }, null);
 }
 
 function mostrarConstruccion(app, itemEl) {
@@ -3530,6 +3571,29 @@ window.disableThreadsBackground = initThreadsBackground(document.getElementById(
       }
     });
   });
+})();
+</script>
+<script>
+// Organigrama incrustado en Inicio: carga diferida (solo cuando está por verse,
+// para no descargar los ~340 registros en cada visita a Inicio) y capa de clic.
+(function () {
+  var home = document.getElementById('home');
+  var box = document.getElementById('org-embed');
+  var fr = document.getElementById('org-embed-frame');
+  var cap = document.getElementById('org-embed-cap');
+  if (!home || !box || !fr || !cap) return;
+  function cargar() {
+    if (fr.getAttribute('src')) return;
+    fr.src = (typeof urlOrganigrama === 'function') ? urlOrganigrama() : 'https://zxerpdev.github.io/Avisos-RH/?vista=organigrama';
+  }
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (en) {
+      if (en.some(function (e) { return e.isIntersecting; })) { cargar(); io.disconnect(); }
+    }, { root: home, rootMargin: '300px 0px' });
+    io.observe(box);
+  } else { cargar(); }
+  cap.addEventListener('click', function () { box.classList.add('activo'); });
+  box.addEventListener('mouseleave', function () { box.classList.remove('activo'); });
 })();
 </script>
 </body>
