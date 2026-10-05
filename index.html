@@ -466,6 +466,16 @@
     align-items:center;
     justify-content:space-between;
   }
+  #topbar-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+  #topbar-icons{ display:flex; align-items:center; gap:6px; }
+  #organigrama-btn{
+    width:26px; height:26px; flex-shrink:0;
+    border:1px solid var(--border); border-radius:8px; background:transparent;
+    color:var(--zx-blue-dark); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:background .15s ease, border-color .15s ease;
+  }
+  #organigrama-btn svg{ width:15px; height:15px; }
+  #organigrama-btn:hover{ background:rgba(34,126,246,.08); border-color:rgba(34,126,246,.3); }
   #reload-btn, #home-btn{
     border:1px solid var(--border);
     background:transparent;
@@ -842,7 +852,19 @@
 
   <div id="main">
     <div id="topbar">
-      <span id="current-app-label">Inicio</span>
+      <div id="topbar-left">
+        <span id="current-app-label">Inicio</span>
+        <div id="topbar-icons">
+          <button id="organigrama-btn" onclick="abrirOrganigrama()" title="Organigrama" aria-label="Ver organigrama">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="9" y="3" width="6" height="5" rx="1"/>
+              <path d="M12 8v4M12 12H6M12 12h6M6 12v4M18 12v4"/>
+              <rect x="3" y="16" width="6" height="5" rx="1"/>
+              <rect x="15" y="16" width="6" height="5" rx="1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
       <div id="topbar-actions">
         <button id="home-btn" onclick="goHome()" style="display:none">🏠 Inicio</button>
         <button id="reload-btn" onclick="reloadFrame()" style="display:none">⟳ Recargar</button>
@@ -1223,6 +1245,14 @@ function abrirApp(app, itemEl) {
     mostrarVista("app-frame", "block");
   };
   frame.src = app.url;
+}
+
+// Acceso directo desde el sidebar: abre Avisos RH directo en la sección
+// de Organigrama (ajusta el "#organigrama" si Avisos RH usa otro nombre
+// de sección/hash para esa pestaña).
+function abrirOrganigrama() {
+  const base = (appsPlanas.find(a => a.id === "avisos-rh") || {}).url || "https://zxerpdev.github.io/Avisos-RH/";
+  abrirApp({ id: "avisos-rh", nombre: "Organigrama", url: base.replace(/\/?(#.*)?$/, "/") + "#organigrama" }, null);
 }
 
 function mostrarConstruccion(app, itemEl) {
